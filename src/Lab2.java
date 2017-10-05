@@ -5,13 +5,12 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Alexandr on 05.10.2017.
  */
 public class Lab2 {
-    static String what = "int n = 1";
-    static String cur = "";
     static int pnt = 0;
 
     static String alph = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -28,8 +27,15 @@ public class Lab2 {
 
     static BufferedWriter out;
 
+    static HashMap<String, String> voc = new HashMap<>();
+
     public static void main(String[] args) throws Exception{
-        int n = 1;
+        voc.put("for", "T_for");
+        voc.put("indef", "T_indef");
+        voc.put("const", "T_const");
+        voc.put("int", "T_int");
+        voc.put("__int64", "T_int64");
+
         startnorm = new Node(false, "");
         buildAutomato(startnorm);
 
@@ -37,7 +43,11 @@ public class Lab2 {
         buildAnotherAutomato(startign);
 
         BufferedReader in = new BufferedReader(new FileReader("in.in"));
-        out = new BufferedWriter(new FileWriter("out.out"));
+        try {
+            out = new BufferedWriter(new FileWriter("out.out"));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
         while (true){
             String st = in.readLine();
@@ -45,7 +55,7 @@ public class Lab2 {
 
             if(st == null) {
                 try {
-                    out.write(strnum + " EOF\n");
+                    out.write(strnum + " T_EOF\n");
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -60,7 +70,7 @@ public class Lab2 {
         out.close();
     }
 
-    static boolean next(char[] string){
+    private static boolean next(char[] string){
         pnt = 0;
         int len = string.length;
 
@@ -68,31 +78,45 @@ public class Lab2 {
             pnt = passIgn(string);
             if(errorbuff.endsWith("/")){
                 pnt *= -1;
+                try {
+                    out.write(strnum + " T_division /\n");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             else if(pnt < 0){
                 try {
-                    out.write(strnum+ " ERROR " + errorbuff +"\n");
+                    out.write(strnum+ " T_err " + errorbuff +"\n");
                 }catch (Exception e){
                     e.printStackTrace();
                 }
                 pnt *= -1;
             }
 
-            String ans = findLex(string);
-            try {
-                out.write(strnum + " "+ ans + " " + errorbuff +"\n");
-            }catch (Exception e){
-                e.printStackTrace();
+            if(pnt < len) {
+                String ans = findLex(string);
+
+                try {
+                    if(ans.equals("T_id") && voc.get(errorbuff) != null)
+                        out.write(strnum + " " + voc.get(errorbuff) + " " + errorbuff + "\n");
+                    else
+                        out.write(strnum + " " + ans + " " + errorbuff + "\n");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
             }
         }
 
         return true;
     }
 
-    static String findLex(char[] str){
+    private static String findLex(char[] str){
         boolean canmove = true;
         errorbuff = "";
         int len = str.length;
+        int prev = pnt;
 
         Node cur = startnorm;
         while (canmove && pnt < len){
@@ -111,7 +135,11 @@ public class Lab2 {
         if(cur.fina){
             return cur.meaning;
         }else{
-            return "ERROR";
+            if(pnt == prev) {
+                errorbuff += str[pnt];
+                pnt++;
+            }
+            return "T_err";
         }
 
     }
@@ -144,7 +172,7 @@ public class Lab2 {
     private static void buildAutomato(Node start){
         //Идентификатор и ключевое слово
         Node from = start;
-        Node to = new Node(true, "Идентификатор/Ключевое слово");
+        Node to = new Node(true, "T_id");
         from.addEdge(new Edge(alph, from, to));
 
         from = to;
@@ -153,11 +181,11 @@ public class Lab2 {
 
         //Числа
         from = start;
-        to = new Node(true,"Ноль");
+        to = new Node(true,"T_const10");
         from.addEdge(new Edge("0", from, to));
 
         Node zero = to;
-        to = new Node(true, "Число 10 с/с");
+        to = new Node(true, "T_const10");
         from = zero;
         from.addEdge(new Edge(numbers, from, to));
 
@@ -172,7 +200,7 @@ public class Lab2 {
         from.addEdge(new Edge("x", from, to));
 
         from = to;
-        to = new Node(true, "Число 16 с/с");
+        to = new Node(true, "T_const16");
         from.addEdge(new Edge(numbers, from, to));
         from.addEdge(new Edge(AToF, from, to));
 
@@ -181,35 +209,35 @@ public class Lab2 {
         from.addEdge(new Edge(AToF, from, to));
 
         from = start;
-        to = new Node(true, "=");
+        to = new Node(true, "T_assign");
         from.addEdge(new Edge("=", from, to));
 
         from = to;
-        to = new Node(true, "==");
+        to = new Node(true, "T_equal");
         from.addEdge(new Edge("=", from, to));
 
         from = start;
-        to = new Node(true, ">");
+        to = new Node(true, "T_more");
         from.addEdge(new Edge(">", from, to));
 
         from = to;
-        to = new Node(true, ">=");
+        to = new Node(true, "T_meq");
         from.addEdge(new Edge("=", from, to));
 
         from = start;
-        to = new Node(true, "<");
+        to = new Node(true, "T_less");
         from.addEdge(new Edge("<", from, to));
 
         from = to;
-        to = new Node(true, "<=");
+        to = new Node(true, "T_leq");
         from.addEdge(new Edge("=", from, to));
 
         from = start;
-        to = new Node(true, "!");
+        to = new Node(true, "T_not");
         from.addEdge(new Edge("!", from, to));
 
         from = to;
-        to = new Node(true, "!=");
+        to = new Node(true, "T_noteq");
         from.addEdge(new Edge("=", from, to));
 
         from = start;
@@ -217,7 +245,7 @@ public class Lab2 {
         from.addEdge(new Edge("|", from, to));
 
         from = to;
-        to = new Node(true, "||");
+        to = new Node(true, "T_or");
         from.addEdge(new Edge("|", from, to));
 
         from = start;
@@ -225,44 +253,64 @@ public class Lab2 {
         from.addEdge(new Edge("&", from, to));
 
         from = to;
-        to = new Node(true, "&&");
+        to = new Node(true, "T_and");
         from.addEdge(new Edge("&", from, to));
 
         from = start;
-        to = new Node(true, "(");
+        to = new Node(true, "T_lparenthesis");
         from.addEdge(new Edge("(", from, to));
 
         from = start;
-        to = new Node(true, ")");
+        to = new Node(true, "T_rparenthesis");
         from.addEdge(new Edge(")", from, to));
 
         from = start;
-        to = new Node(true, "[");
+        to = new Node(true, "T_lsbracket");
         from.addEdge(new Edge("[", from, to));
 
         from = start;
-        to = new Node(true, "]");
+        to = new Node(true, "T_rsbracket");
         from.addEdge(new Edge("]", from, to));
 
         from = start;
-        to = new Node(true, "{");
+        to = new Node(true, "T_lbracket");
         from.addEdge(new Edge("{", from, to));
 
         from = start;
-        to = new Node(true, "}");
+        to = new Node(true, "T_rbracket");
         from.addEdge(new Edge("}", from, to));
 
         from = start;
-        to = new Node(true, ".");
+        to = new Node(true, "T_dot");
         from.addEdge(new Edge(".", from, to));
 
         from = start;
-        to = new Node(true, ",");
+        to = new Node(true, "T_colon");
         from.addEdge(new Edge(",", from, to));
 
         from = start;
-        to = new Node(true, ";");
+        to = new Node(true, "T_semicolon");
         from.addEdge(new Edge(";", from, to));
+
+        from = start;
+        to = new Node(true, "T_plus");
+        from.addEdge(new Edge("+", from, to));
+
+        from = start;
+        to = new Node(true, "T_minus");
+        from.addEdge(new Edge("-", from, to));
+
+        from = start;
+        to = new Node(true, "T_division");
+        from.addEdge(new Edge("/", from, to));
+
+        from = start;
+        to = new Node(true, "T_multiply");
+        from.addEdge(new Edge("*", from, to));
+
+        from = start;
+        to = new Node(true, "T_remainder");
+        from.addEdge(new Edge("%", from, to));
     }
 
     private static void buildAnotherAutomato(Node start){
