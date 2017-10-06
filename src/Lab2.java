@@ -75,22 +75,30 @@ public class Lab2 {
         int len = string.length;
 
         while(pnt < len){
-            pnt = passIgn(string);
-            if(errorbuff.endsWith("/")){
-                pnt *= -1;
-                try {
-                    out.write(strnum + " T_division /\n");
-                } catch (Exception e) {
-                    e.printStackTrace();
+            boolean unchecked = true;
+            while(unchecked) {
+                unchecked = false;
+                pnt = passIgn(string);
+
+                if (errorbuff.endsWith(" /") || errorbuff.equals("/")) {
+                    unchecked = true;
+                    pnt *= -1;
+                    try {
+                        out.write(strnum + " T_division /\n");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else if (pnt < 0) {
+                    unchecked = true;
+                    if(errorbuff.endsWith("\n"))
+                        errorbuff = errorbuff.substring(0,errorbuff.length()-1);
+                    try {
+                        out.write(strnum + " T_err " + errorbuff + "\n");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    pnt *= -1;
                 }
-            }
-            else if(pnt < 0){
-                try {
-                    out.write(strnum+ " T_err " + errorbuff +"\n");
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-                pnt *= -1;
             }
 
             if(pnt < len) {
@@ -340,7 +348,9 @@ public class Lab2 {
         from.addEdge(new Edge("*", from, to, 1));
 
         to = new Node(false, "/**");
-        to.addEdge(new Edge("/*",to, from));
+        to.addEdge(new Edge("/*",to, from, 1));
+
+        from.addEdge(new Edge("*",from, to));
 
         from = to;
         from.addEdge(new Edge("*",from, to));

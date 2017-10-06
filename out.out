@@ -1,2 +1,5 @@
-1 T_err #
+1 T_int int
+1 T_division /
+1 T_id a
+1 T_division /
 2 T_EOF
