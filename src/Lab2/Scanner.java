@@ -1,4 +1,4 @@
-package v2;
+package lab2;
 
 import java.io.BufferedReader;
 import java.io.Reader;
@@ -30,6 +30,7 @@ public class Scanner {
 	private final BufferedReader reader;
 	private char[] line;
 	private int ptr, currentLine = 0;
+	private ArrayList<Integer> stringLengthes = new ArrayList<>();
 	
 	private StringBuilder current = new StringBuilder();
 
@@ -42,7 +43,9 @@ public class Scanner {
 		while(true){
 			try {
 				String readed = this.reader.readLine();
+
 				if(readed != null) {
+					stringLengthes.add(readed.length());
 					all_lines.add(readed);
 				} else {
 					line = null;
@@ -54,17 +57,40 @@ public class Scanner {
 			}
 		}
 
+	}
+
+	public void readAllLexemes(){
 		pickNextLine();
 
 		while (true) {
-			Leksema cur = next();
+			Lexeme cur = next();
 			System.out.print(cur.line+" "+cur.type+" "+cur.value+"\n");
 			if(cur.type == Type.T_EOF)
 				break;
 		}
 	}
-	
-	public Leksema next() {
+
+	public int getGlobalPtr(){
+		int ans = 0;
+
+		for(int i = 1; i < currentLine; i++){
+			ans += stringLengthes.get(i-1);
+		}
+
+		return ans + ptr;
+	}
+
+	public void setLocalPtr(int global){
+		while(global > stringLengthes.get(currentLine-1)){
+			global -= stringLengthes.get(currentLine-1);
+			currentLine--;
+		}
+
+		ptr = global;
+		line = all_lines.get(currentLine).toCharArray();
+	}
+
+	public Lexeme next() {
 		skip();
 		if(line == null)
 			return finishLexeme(Type.T_EOF);
@@ -187,7 +213,7 @@ public class Scanner {
 		}
 	}
 	
-	private Leksema checkTwoChars(Type type, char c, Type type2) {
+	private Lexeme checkTwoChars(Type type, char c, Type type2) {
 		if(line[ptr] != c)
 			return finishLexeme(type);
 
@@ -208,19 +234,19 @@ public class Scanner {
 		return isNumber(c) || 'a' <= c && c <= 'f' || 'A' <= c && c <= 'F';
 	}
 	
-	private Leksema finishLexeme(Type t) {
-		Leksema l = new Leksema(t, current.toString(), currentLine);
+	private Lexeme finishLexeme(Type t) {
+		Lexeme l = new Lexeme(t, current.toString(), currentLine);
 		current = new StringBuilder();
 		return l;
 	}
 	
-	public static class Leksema {
+	public static class Lexeme {
 		
 		final Type type;
 		final String value;
 		final int line;
 		
-		private Leksema(Type t, String v, int l) {
+		private Lexeme(Type t, String v, int l) {
 			type = t;
 			value = v;
 			line = l;
