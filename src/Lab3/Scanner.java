@@ -1,5 +1,7 @@
 package Lab3;
 
+import javafx.util.Pair;
+
 import java.io.BufferedReader;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -20,7 +22,7 @@ public class Scanner {
 	
 	private final BufferedReader reader;
 	private char[] line;
-	private int ptr, currentLine = 0;
+	public int ptr, currentLine = 0;
 	private ArrayList<Integer> stringLengthes = new ArrayList<>();
 	
 	private StringBuilder current = new StringBuilder();
@@ -61,24 +63,20 @@ public class Scanner {
 		}
 	}
 
-	public int getGlobalPtr(){
-		int ans = 0;
-
-		for(int i = 1; i < currentLine; i++){
-			ans += stringLengthes.get(i-1);
-		}
-
-		return ans + ptr;
+	public Pair<Integer,Integer> getGlobalPtr(){
+//		int ans = 0;
+//
+//		for(int i = 1; i < currentLine; i++){
+//			ans += stringLengthes.get(i-1);
+//		}
+//
+//		return ans + ptr;
+		return new Pair<>(currentLine, ptr);
 	}
 
-	public void setLocalPtr(int global){
-		while(global > stringLengthes.get(currentLine-1)){
-			global -= stringLengthes.get(currentLine-1);
-			currentLine--;
-		}
-
-		ptr = global;
-		line = all_lines.get(currentLine).toCharArray();
+	public void setLocalPtr(Pair<Integer,Integer> global){
+		currentLine = global.getKey();
+		ptr = global.getValue();
 	}
 
 	public Lexeme next() {
@@ -190,7 +188,7 @@ public class Scanner {
 		}
 	}
 	
-	private void pickNextLine() {
+	public void pickNextLine() {
 		try {
 			String readed = all_lines.get(currentLine);
 			if(readed != null) {
