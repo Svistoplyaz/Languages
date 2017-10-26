@@ -77,6 +77,7 @@ public class Scanner {
 	public void setLocalPtr(Pair<Integer,Integer> global){
 		currentLine = global.getKey();
 		ptr = global.getValue();
+		chooseLine(currentLine - 1);
 	}
 
 	public Lexeme next() {
@@ -195,6 +196,18 @@ public class Scanner {
 				line = (readed + "\n").toCharArray();
 				ptr = 0;
 				currentLine++;
+			} else
+				line = null;
+		} catch(Exception e) {
+			line = null;
+		}
+	}
+
+	public void chooseLine(int numline) {
+		try {
+			String readed = all_lines.get(numline);
+			if(readed != null) {
+				line = (readed + "\n").toCharArray();
 			} else
 				line = null;
 		} catch(Exception e) {

@@ -14,83 +14,96 @@ import static Lab3.Type.*;
  */
 public class SyntaxAnalyzer {
     private Scanner sc;
+    private Pair<Integer, Integer> errorPos;
 
 //    private Type[] main = {T_int, T_main, T_rbracket, T_lbracket};
 
-    public SyntaxAnalyzer(FileReader in){
+    public SyntaxAnalyzer(FileReader in) {
         sc = new Scanner(in);
     }
 
-    public void checkFile()throws Exception{
+    public void checkFile() throws Exception {
         tProgram();
 //        sc.readAllLexemes();
     }
 
-    private Pair<Integer,Integer> getUK(){
+    private Pair<Integer, Integer> getUK() {
         return sc.getGlobalPtr();
     }
 
-    private void setUK(Pair<Integer,Integer> uk){
+    private void setUK(Pair<Integer, Integer> uk) {
         sc.setLocalPtr(uk);
     }
 
-    private void tProgram() throws Exception{
+    private void tProgram() throws Exception {
         sc.pickNextLine();
-        Pair<Integer,Integer> uk = getUK();
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        while(t.type != T_EOF){
+        while (t.type != T_EOF) {
             tElement();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
         }
 
-        
+
     }
 
-    private void tElement() throws Exception{
-        Pair<Integer,Integer> uk = getUK();
+    private void tElement() throws Exception {
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_const){
+        if (t.type == T_const) {
             tConst();
-                
-        }else if(t.type == T_typedef){
+
+        } else if (t.type == T_typedef) {
             tTypedef();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
-            if(t.type != T_semicolon){
+            if (t.type != T_semicolon) {
                 printError("Ожидалась ;");
-            }else{
+            } else {
                 sc.next();
             }
-        }else if(t.type == T_int){
+        } else if (t.type == T_int) {
             uk = getUK();
+
             sc.next();
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
-            if(t.type == T_main){
+            if (t.type == T_main) {
                 tMain();
-            }else
+            } else
                 tDataDescription();
 
-        }else if(t.type == T_int64 || t.type == T_id)
+        } else if (t.type == T_int64 || t.type == T_id)
             tDataDescription();
         else
-            printError("Ожидалось asd!№;");
+            printError("Ожидалось main, typedef, описание данных или константы");
     }
 
-    private void tSblock() throws Exception{
-        Pair<Integer,Integer> uk = getUK();
+    private void tSblock() throws Exception {
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
         if (t.type == T_lbracket) {
@@ -99,41 +112,51 @@ public class SyntaxAnalyzer {
             tBlock();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
-            if(t.type != T_rbracket){
+            if (t.type != T_rbracket) {
                 printError("Ожидалась }");
-            }else{
+            } else {
                 sc.next();
             }
-        }else
+        } else
             printError("Ожидалась {");
 
         return;
     }
 
-    private void tMain() throws Exception{
-        Pair<Integer,Integer> uk = getUK();
+    private void tMain() throws Exception {
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_int) {
+        if (t.type == T_int) {
             sc.next();
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
             if (t.type == T_main) {
                 sc.next();
                 uk = getUK();
+
                 t = sc.next();
+                errorPos = getUK();
                 setUK(uk);
 
                 if (t.type == T_lparenthesis) {
                     sc.next();
                     uk = getUK();
+
                     t = sc.next();
+                    errorPos = getUK();
                     setUK(uk);
 
                     if (t.type == T_rparenthesis) {
@@ -147,495 +170,620 @@ public class SyntaxAnalyzer {
                 printError("Ожидалась main");
         } else
             printError("Ожидалась int");
-
-        return;
     }
 
-    private void tBlock() throws Exception{
-        Pair<Integer,Integer> uk = getUK();
+    private void tBlock() throws Exception {
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        while(t.type != T_rbracket){
+        while (t.type != T_rbracket) {
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
-            if(t.type == T_for || t.type == T_lbracket || t.type == T_semicolon){
+            if (t.type == T_for || t.type == T_lbracket || t.type == T_semicolon) {
                 tPartOfBlock();
-            }else{
+            } else {
                 uk = getUK();
+
                 t = sc.next();
+                errorPos = getUK();
                 Lexeme t1 = sc.next();
                 setUK(uk);
 
-                if(t.type == T_id || t.type == T_int || t.type == T_int64 && t1.type == T_assign){
+                if (t.type == T_id && t1.type == T_assign) {
                     tPartOfBlock();
-                }else if(t.type == T_id || t.type == T_int || t.type == T_int64){
+                } else if (t.type == T_id || t.type == T_int || t.type == T_int64) {
                     tDataDescription();
-                }else
-                    printError("Ожидалось !@#$%");
+                } else
+                    printError("Ожидалось объявление данных");
             }
+
+            uk = getUK();
+
+            t = sc.next();
+            errorPos = getUK();
+            setUK(uk);
         }
     }
 
-    private void tPartOfBlock() throws Exception{
-        Pair<Integer,Integer> uk = getUK();
+    private void tPartOfBlock() throws Exception {
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_for){
+        if (t.type == T_for) {
             tFor();
-        }else if(t.type == T_lbracket){
+        } else if (t.type == T_lbracket) {
             tSblock();
-        }else if(t.type == T_semicolon){
+        } else if (t.type == T_semicolon) {
             sc.next();
-        }else {
+        } else {
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             Lexeme t1 = sc.next();
             setUK(uk);
 
-            if(t.type == T_id || t.type == T_int || t.type == T_int64 && t1.type == T_assign){
+            if (t.type == T_id || t.type == T_int || t.type == T_int64 && t1.type == T_assign) {
                 tAssignment();
 
                 uk = getUK();
+
                 t = sc.next();
+                errorPos = getUK();
                 setUK(uk);
 
-                if(t.type == T_semicolon){
+                if (t.type == T_semicolon) {
                     sc.next();
-                }else
+                } else
                     printError("Ожидалось ;");
-            }else
-                printError("Ожидалось !@#$%");
+            } else
+                printError("Ожидалось объявление данных");
         }
     }
 
-    private void tFor() throws Exception{
+    private void tFor() throws Exception {
         sc.next();
 
-        Pair<Integer,Integer> uk = getUK();
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_int || t.type == T_int64 || t.type == T_id){
+        if (t.type == T_lparenthesis) {
             sc.next();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
-            if(t.type == T_lbracket){
-                sc.next();
-
+            if (t.type == T_int || t.type == T_int64 || t.type == T_id) {
                 tDataDescription();
 
                 tA0();
 
                 uk = getUK();
+
                 t = sc.next();
+                errorPos = getUK();
                 setUK(uk);
 
-                if(t.type == T_semicolon){
+                if (t.type == T_semicolon) {
                     sc.next();
 
                     tA0();
 
                     uk = getUK();
+
                     t = sc.next();
+                    errorPos = getUK();
                     setUK(uk);
 
-                    if(t.type == T_rbracket){
+                    if (t.type == T_rparenthesis) {
                         sc.next();
                         tPartOfBlock();
-                    }else
+                    } else
                         printError("Ожидалась }");
-                }else
+                } else
                     printError("Ожидалось ;");
-            }else
-                printError("Ожидалась {");
-        }else
-            printError("Ожидалось !@#%");
+            } else
+                printError("Ожидалась объявление данных");
+        } else
+            printError("Ожидалось (");
 
     }
 
-    private void tTypedef() throws Exception{
+    private void tTypedef() throws Exception {
         sc.next();
 
-        Pair<Integer,Integer> uk = getUK();
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_int || t.type == T_int64 || t.type == T_id){
+        if (t.type == T_int || t.type == T_int64 || t.type == T_id) {
             sc.next();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
-            if(t.type == T_lsbracket){
+            if (t.type == T_lsbracket) {
                 sc.next();
 
                 uk = getUK();
+
                 t = sc.next();
+                errorPos = getUK();
                 setUK(uk);
 
-                if(t.type == T_const10 || t.type == T_const16 || t.type == T_id){
+                if (t.type == T_const10 || t.type == T_const16 || t.type == T_id) {
                     sc.next();
 
                     uk = getUK();
+
                     t = sc.next();
+                    errorPos = getUK();
                     setUK(uk);
 
-                    if(t.type == T_rsbracket){
+                    if (t.type == T_rsbracket) {
                         sc.next();
 
                         uk = getUK();
+
                         t = sc.next();
+                        errorPos = getUK();
                         setUK(uk);
 
-                        if(t.type == T_id){
+                        if (t.type == T_id) {
                             sc.next();
-                        }else
+                        } else
                             printError("Ожидался идентификатор");
-                    }else
+                    } else
                         printError("Ожидалось ]");
-                }else
+                } else
                     printError("Ожидалось число");
-            }else
+            } else
                 printError("Ожидалось [");
-        }else
-            printError("Ожидалось !@#$");
+        } else
+            printError("Ожидался тип");
     }
 
-    private void tConst() throws Exception{
+    private void tConst() throws Exception {
         sc.next();
 
-        Pair<Integer,Integer> uk = getUK();
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_int || t.type == T_int64 || t.type == T_id){
+        if (t.type == T_int || t.type == T_int64 || t.type == T_id) {
             sc.next();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
-            if(t.type == T_id){
+            if (t.type == T_id) {
                 sc.next();
 
                 uk = getUK();
+
                 t = sc.next();
+                errorPos = getUK();
                 setUK(uk);
 
-                if(t.type == T_const10 || t.type == T_const16){
+                if (t.type == T_const10 || t.type == T_const16) {
                     sc.next();
 
                     uk = getUK();
+
                     t = sc.next();
+                    errorPos = getUK();
                     setUK(uk);
 
-                    if(t.type == T_semicolon){
+                    if (t.type == T_semicolon) {
                         sc.next();
-                    }else
+                    } else
                         printError("Ожидалось ;");
-                }else
+                } else
                     printError("Ожидалось число");
-            }else
+            } else
                 printError("Ожидалось id");
-        }else
-            printError("Ожидалось !@#$");
+        } else
+            printError("Ожидался тип");
     }
 
-    private void tArrayElement() throws Exception{
-        Pair<Integer,Integer> uk = getUK();
+    private void tArrayElement() throws Exception {
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_lsbracket){
+        if (t.type == T_lsbracket) {
             sc.next();
 
             tA0();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
-            if(t.type == T_rsbracket){
+            if (t.type == T_rsbracket) {
                 sc.next();
-            }else
+            } else
                 printError("Ожидалась ]");
-        }else
+        } else
             printError("Ожидалось [");
     }
 
-    private void tDataDescription() throws Exception{
-        Pair<Integer,Integer> uk = getUK();
+    private void tDataDescription() throws Exception {
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_int || t.type == T_int64 || t.type == T_id){
+        if (t.type == T_int || t.type == T_int64 || t.type == T_id) {
             sc.next();
 
             tIdList();
         }
 
         uk = getUK();
+
         t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_semicolon){
+        if (t.type == T_semicolon) {
             sc.next();
-        }else
+        } else
             printError("Ожидалась ;");
     }
 
-    private void tAssignment() throws Exception{
-        Pair<Integer,Integer> uk = getUK();
+    private void tAssignment() throws Exception {
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_assign){
+        if (t.type == T_assign) {
             sc.next();
             tA0();
-        }else
+        } else
             printError("Ожидалось =");
     }
 
-    private void tAssignment1() throws Exception{
-        Pair<Integer,Integer> uk = getUK();
+    private void tAssignment1() throws Exception {
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_assign){
+        if (t.type == T_assign) {
             sc.next();
             tA0();
-        }else
+        } else
             printError("Ожидалось =");
     }
 
-    private void tIdList() throws Exception{
-        Pair<Integer,Integer> uk = getUK();
+    private void tIdList() throws Exception {
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_id){
+        if (t.type == T_id) {
             sc.next();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
-            if(t.type == T_assign){
+            if (t.type == T_assign) {
                 tAssignment1();
             }
-        }else
+        } else
             printError("Ожидался идентификатор");
 
         uk = getUK();
+
         t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        while (t.type == T_colon){
+        while (t.type == T_colon) {
             sc.next();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
-            if(t.type == T_id){
+            if (t.type == T_id) {
                 sc.next();
 
                 uk = getUK();
+
                 t = sc.next();
+                errorPos = getUK();
                 setUK(uk);
 
-                if(t.type == T_assign){
+                if (t.type == T_assign) {
                     tAssignment1();
                 }
-            }else{
+            } else {
                 printError("Ожидался идентификатор");
             }
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
         }
     }
 
-    private void tA0() throws Exception{
-        Pair<Integer,Integer> uk = getUK();
+    private void tA0() throws Exception {
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_id){
+        boolean justA1 = true;
+        Pair<Integer, Integer> IMPORTANTuk = getUK();
+
+
+        if (t.type == T_id) {
+            justA1 = false;
+            uk = getUK();
+
             sc.next();
-
-            uk = getUK();
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
-            if(t.type == T_lsbracket){
+            if (t.type != T_lsbracket) {
+                uk = getUK();
+
+                sc.next();
+                t = sc.next();
+                errorPos = getUK();
+                setUK(uk);
+
+                if (t.type == T_assign) {
+                    sc.next();
+                    tAssignment();
+                } else {
+                    justA1 = true;
+                }
+            } else {
                 tArrayElement();
-            }
 
-            uk = getUK();
-            t = sc.next();
-            setUK(uk);
+                uk = getUK();
 
-            if(t.type == T_assign){
-                tA1();
-                return;
+                t = sc.next();
+                errorPos = getUK();
+                setUK(uk);
+
+                if (t.type == T_assign) {
+                    sc.next();
+                    tAssignment();
+                } else {
+                    justA1 = true;
+                }
             }
         }
+        if (justA1) {
+            setUK(IMPORTANTuk);
+            tA1();
+        }
 
-        tA1();
-
-        return;
     }
 
-    private void tA1() throws Exception{
+    private void tA1() throws Exception {
         tA2();
 
-        Pair<Integer,Integer> uk = getUK();
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        while (t.type == T_or){
+        while (t.type == T_or) {
+            sc.next();
+
             tA2();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
         }
-
-        return;
     }
 
-    private void tA2() throws Exception{
+    private void tA2() throws Exception {
         tA3();
 
-        Pair<Integer,Integer> uk = getUK();
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        while (t.type == T_and){
+        while (t.type == T_and) {
+            sc.next();
+
             tA3();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
         }
-
-        return;
     }
 
-    private void tA3() throws Exception{
+    private void tA3() throws Exception {
         tA4();
 
-        Pair<Integer,Integer> uk = getUK();
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        while (t.type == T_more || t.type == T_less || t.type == T_meq || t.type == T_leq || t.type == T_neq || t.type == T_eqaul){
+        while (t.type == T_more || t.type == T_less || t.type == T_meq || t.type == T_leq || t.type == T_neq || t.type == T_eqaul) {
+            sc.next();
+
             tA4();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
         }
-
-        return;
     }
 
-    private void tA4() throws Exception{
+    private void tA4() throws Exception {
         tA5();
 
-        Pair<Integer,Integer> uk = getUK();
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        while (t.type == T_minus || t.type == T_plus){
+        while (t.type == T_minus || t.type == T_plus) {
+            sc.next();
+
             tA5();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
         }
-
-        return;
     }
 
-    private void tA5() throws Exception{
+    private void tA5() throws Exception {
         tA6();
 
-        Pair<Integer,Integer> uk = getUK();
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        while (t.type == T_multiply || t.type == T_division || t.type == T_mod){
+        while (t.type == T_multiply || t.type == T_division || t.type == T_mod) {
+            sc.next();
+
             tA6();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
         }
-
-        return;
     }
 
-    private void tA6() throws Exception{
-        Pair<Integer,Integer> uk = getUK();
+    private void tA6() throws Exception {
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        while (t.type == T_not){
+        while (t.type == T_not) {
+            sc.next();
+
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
         }
 
         tA7();
-
-        return;
     }
 
-    private void tA7() throws Exception{
-        Pair<Integer,Integer> uk = getUK();
+    private void tA7() throws Exception {
+        Pair<Integer, Integer> uk = getUK();
+
         Lexeme t = sc.next();
+        errorPos = getUK();
         setUK(uk);
 
-        if(t.type == T_const10 || t.type == T_const16)
-            return;
-        else if(t.type == T_lparenthesis){
+        if (t.type == T_const10 || t.type == T_const16) {
+            sc.next();
+        } else if (t.type == T_lparenthesis) {
+            sc.next();
+
             tA0();
 
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
-            if(t.type != T_rparenthesis){
+            if (t.type != T_rparenthesis) {
                 printError("Ожидалась )");
-            }else
+            } else
                 sc.next();
-        }
-        else if(t.type == T_id){
+        } else if (t.type == T_id) {
+            sc.next();
+
             uk = getUK();
+
             t = sc.next();
+            errorPos = getUK();
             setUK(uk);
 
-            if(t.type == T_lsbracket){
+            if (t.type == T_lsbracket) {
                 tArrayElement();
             }
-        }
+        }else
+            printError("Ожидалось выражение");
 
-        
     }
 
-    private void printError(String end) throws Exception{
-        String ans = "" + (sc.currentLine + 1)  + " " + (sc.ptr + 1) + " "+end;
+    private void printError(String end) throws Exception {
+//        String ans = "" + (sc.currentLine) + " " + (sc.ptr + 1) + " " + end;
+        String ans = "" + (errorPos.getKey()) + " " + (errorPos.getValue()) + " " + end;
 
         System.out.println(ans);
 
