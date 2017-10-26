@@ -188,12 +188,12 @@ public class SyntaxAnalyzer {
 
             if (t.type == T_for || t.type == T_lbracket || t.type == T_semicolon) {
                 tPartOfBlock();
-            } else {
+            } else if(t.type == T_id || t.type == T_int || t.type == T_int64){
                 uk = getUK();
 
                 t = sc.next();
-                errorPos = getUK();
                 Lexeme t1 = sc.next();
+                errorPos = getUK();
                 setUK(uk);
 
                 if (t.type == T_id && t1.type == T_assign) {
@@ -202,6 +202,8 @@ public class SyntaxAnalyzer {
                     tDataDescription();
                 } else
                     printError("Ожидалось объявление данных");
+            }else{
+                printError("Ожидался for | ; | блок | присваивание | объявление данных");
             }
 
             uk = getUK();
@@ -783,7 +785,7 @@ public class SyntaxAnalyzer {
 
     private void printError(String end) throws Exception {
 //        String ans = "" + (sc.currentLine) + " " + (sc.ptr + 1) + " " + end;
-        String ans = "" + (errorPos.getKey()) + " " + (errorPos.getValue()) + " " + end;
+        String ans = "" + (errorPos.getKey()) + " " + (errorPos.getValue()+1) + " " + end;
 
         System.out.println(ans);
 
