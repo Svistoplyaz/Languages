@@ -1,8 +1,7 @@
-package Lab5;
+package Lab7;
 
-import Lab3.*;
-import Lab3.Type;
-import Lab3.Scanner.Lexeme;
+import Lab3.Lexeme;
+import Lab3.Scanner;
 import javafx.util.Pair;
 
 import java.io.FileReader;
@@ -12,19 +11,21 @@ import static Lab3.Type.*;
 /**
  * Created by Alexander on 18.10.2017.
  */
-public class SyntaxAnalyzer {
+public class TreeBuilder {
     private Scanner sc;
     private Pair<Integer, Integer> errorPos;
+    Tree root;
 
 //    private Lexeme[] main = {T_int, T_main, T_rbracket, T_lbracket};
 
-    public SyntaxAnalyzer(FileReader in) {
+    public TreeBuilder(FileReader in) {
         sc = new Scanner(in);
     }
 
-    public void checkFile() throws Exception {
-        tProgram();
+    public Tree buildTree() throws Exception {
+        root = new Tree().setLeft(tProgram());
 //        sc.readAllLexemes();
+        return root;
     }
 
     private Pair<Integer, Integer> getUK() {
@@ -35,7 +36,7 @@ public class SyntaxAnalyzer {
         sc.setLocalPtr(uk);
     }
 
-    private void tProgram() throws Exception {
+    private Tree tProgram() throws Exception {
         sc.pickNextLine();
         Pair<Integer, Integer> uk = getUK();
 
@@ -43,6 +44,7 @@ public class SyntaxAnalyzer {
         errorPos = getUK();
         setUK(uk);
 
+        Tree cur =
         while (t.type != T_EOF) {
             tElement();
 

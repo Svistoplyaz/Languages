@@ -242,18 +242,6 @@ public class Scanner {
 		return l;
 	}
 	
-	public static class Lexeme {
-		
-		public final Type type;
-		final String value;
-		final int line;
-		
-		private Lexeme(Type t, String v, int l) {
-			type = t;
-			value = v;
-			line = l;
-		}
-		
-	}
+
 	
 }
