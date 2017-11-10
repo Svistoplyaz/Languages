@@ -3,8 +3,8 @@ package Lab3;
 public class Lexeme {
 
     public final Type type;
-    final String value;
-    final int line;
+    public final String value;
+    public final int line;
 
     public Lexeme(Type t, String v, int l) {
         type = t;

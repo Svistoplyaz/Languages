@@ -50,6 +50,7 @@ public class Scanner {
 			}
 		}
 
+		pickNextLine();
 	}
 
 	public void readAllLexemes(){
@@ -72,6 +73,15 @@ public class Scanner {
 //
 //		return ans + ptr;
 		return new Pair<>(currentLine, ptr);
+	}
+
+	public Position getCurPosition(){
+		return new Position(currentLine, ptr);
+	}
+
+	public void setCurPosition(Position pos){
+		currentLine = pos.line;
+		ptr = pos.ptr;
 	}
 
 	public void setLocalPtr(Pair<Integer,Integer> global){
@@ -165,6 +175,14 @@ public class Scanner {
 		}
 		
 		return finishLexeme(Type.T_err);
+	}
+
+	public Lexeme nextWithBackup(){
+		skip();
+		Position pos = getCurPosition();
+		Lexeme ans = next();
+		setCurPosition(pos);
+		return ans;
 	}
 	
 	private void skip() {

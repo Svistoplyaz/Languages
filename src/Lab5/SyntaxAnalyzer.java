@@ -2,7 +2,7 @@ package Lab5;
 
 import Lab3.*;
 import Lab3.Type;
-import Lab3.Scanner.Lexeme;
+import Lab3.Lexeme;
 import javafx.util.Pair;
 
 import java.io.FileReader;
@@ -52,7 +52,6 @@ public class SyntaxAnalyzer {
             errorPos = getUK();
             setUK(uk);
         }
-
 
     }
 
