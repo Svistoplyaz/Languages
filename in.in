@@ -1,9 +1,21 @@
+int a, b, c;
+typedef int[10] mi;
+typedef mi[20] mii;
 int main(){
-    id int i = 1;
-    int i = 1, j = 1;
-    for(int i = 1*2+ 3 > 4, j; i < 7; i = i + 1 < 1){
-        int k = 2 + 3;
+    int i, j;
+    mii[i][j] = 0;
+    int c, d;
+    {
+        int c, f, g;
     }
-
-
+    int c;
+    {
+        int c,f,d;
+    }
+    c = d*a;
+    mi x;
+    mii y, z;
+    x = y;
+    x[a] = y[a][b][a] * mi[a];
+    a gg;
 }

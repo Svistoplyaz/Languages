@@ -5,11 +5,13 @@ public class Lexeme {
     public final Type type;
     public final String value;
     public final int line;
+    public final int ptr;
 
-    public Lexeme(Type t, String v, int l) {
+    public Lexeme(Type t, String v, int l, int p) {
         type = t;
         value = v;
         line = l;
+        ptr = p;
     }
 
     @Override

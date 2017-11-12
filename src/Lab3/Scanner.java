@@ -64,16 +64,9 @@ public class Scanner {
 		}
 	}
 
-	public Pair<Integer,Integer> getGlobalPtr(){
-//		int ans = 0;
-//
-//		for(int i = 1; i < currentLine; i++){
-//			ans += stringLengthes.get(i-1);
-//		}
-//
-//		return ans + ptr;
-		return new Pair<>(currentLine, ptr);
-	}
+//	public Pair<Integer,Integer> getGlobalPtr(){
+//		return new Pair<>(currentLine, ptr);
+//	}
 
 	public Position getCurPosition(){
 		return new Position(currentLine, ptr);
@@ -81,14 +74,15 @@ public class Scanner {
 
 	public void setCurPosition(Position pos){
 		currentLine = pos.line;
+		chooseLine(currentLine-1);
 		ptr = pos.ptr;
 	}
 
-	public void setLocalPtr(Pair<Integer,Integer> global){
-		currentLine = global.getKey();
-		ptr = global.getValue();
-		chooseLine(currentLine - 1);
-	}
+//	public void setLocalPtr(Pair<Integer,Integer> global){
+//		currentLine = global.getKey();
+//		ptr = global.getValue();
+//		chooseLine(currentLine - 1);
+//	}
 
 	public Lexeme next() {
 		skip();
@@ -186,6 +180,7 @@ public class Scanner {
 	}
 	
 	private void skip() {
+
 		while (true){
 			if(line == null) return;
 
@@ -208,17 +203,19 @@ public class Scanner {
 	}
 	
 	public void pickNextLine() {
-		try {
-			String readed = all_lines.get(currentLine);
-			if(readed != null) {
-				line = (readed + "\n").toCharArray();
-				ptr = 0;
-				currentLine++;
-			} else
-				line = null;
-		} catch(Exception e) {
-			line = null;
-		}
+        chooseLine(currentLine);
+        currentLine++;
+//		try {
+//			String readed = all_lines.get(currentLine);
+//			if(readed != null) {
+//				line = (readed + "\n").toCharArray();
+//				ptr = 0;
+//				currentLine++;
+//			} else
+//				line = null;
+//		} catch(Exception e) {
+//			line = null;
+//		}
 	}
 
 	public void chooseLine(int numline) {
@@ -255,7 +252,7 @@ public class Scanner {
 	}
 	
 	private Lexeme finishLexeme(Type t) {
-		Lexeme l = new Lexeme(t, current.toString(), currentLine);
+		Lexeme l = new Lexeme(t, current.toString(), currentLine, ptr);
 		current = new StringBuilder();
 		return l;
 	}

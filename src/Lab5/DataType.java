@@ -1,7 +1,7 @@
 package Lab5;
 
 public enum DataType {
-    tInt("int"), tLongInt("long int"), tLongLongInt("long long int"), tBlock(null);
+    tInt("int"), tInt64("__int64"), tBlock(null), tArray("array");
 
     private String value;
 

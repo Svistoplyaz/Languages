@@ -4,6 +4,7 @@ import Lab3.Lexeme;
 import Lab3.Position;
 import Lab3.Scanner;
 import Lab3.Type;
+import javafx.geometry.Pos;
 import javafx.util.Pair;
 
 import java.io.FileReader;
@@ -19,7 +20,7 @@ public class SyntaxAnalyzer2 {
         sem = new SemanticAnalyzer(sc);
     }
 
-    private void tProgram() throws Exception {
+    public void tProgram() throws Exception {
 
         Lexeme t = sc.nextWithBackup();
 
@@ -41,40 +42,40 @@ public class SyntaxAnalyzer2 {
             case T_typedef:
                 tTypedef();
                 break;
-            default:
-                switch (tType()) {
-                    case T_int:
-                        if (sc.nextWithBackup().type == T_main) {
-                            sc.setCurPosition(pos);
-                            tMain();
-                        } else {
-                            sc.setCurPosition(pos);
-                            tDataDescription();
-                        }
-                        break;
-                    default:
-                        sc.setCurPosition(pos);
-                        tDataDescription();
+            case T_int:
+                sc.next();
+                if (sc.nextWithBackup().type == T_main) {
+                    sc.setCurPosition(pos);
+                    tMain();
+                } else {
+                    sc.setCurPosition(pos);
+                    tDataDescription();
                 }
+                break;
+            case T_int64:
+            case T_id:
+                sc.setCurPosition(pos);
+                tDataDescription();
+                break;
+            default:
+                throw new AnalyzeError(sc, t, T_const, T_typedef, T_int, T_int64, T_id);
         }
     }
 
-    private Type tType() {
+    private Lexeme tType() {
         Lexeme type = sc.next();
         switch (type.type) {
             case T_int:
             case T_int64:
-                return type.type;
             case T_id:
-                //Вставить проверку на то что есть такой тип
-                return T_id;
+                return type;
             default:
                 throw new AnalyzeError(sc, type, T_id);
         }
     }
 
     private void tDataDescription() {
-        Type t = tType();
+        Lexeme t = tType();
 
         //Запись в дерево
 
@@ -84,12 +85,15 @@ public class SyntaxAnalyzer2 {
             if (id.type != T_id)
                 throw new AnalyzeError(sc, id, T_id);
 
-            //semantic.addVariable(t, id);
+            sem.addVariable(t, id);
 
             Position pos = sc.getCurPosition();
             Lexeme assignment = sc.next();
             if (assignment.type == T_assign) {
-                //semantic.checkAssignment(assignment, type, A1());
+                DataType dataType = DataType.tArray;
+                if(t.type == T_int) dataType = DataType.tInt;
+                if(t.type == T_int64) dataType = DataType.tInt64;
+                sem.checkAssignment(assignment, dataType, tA0());
             } else sc.setCurPosition(pos);
 
             lexeme = sc.next();
@@ -109,19 +113,19 @@ public class SyntaxAnalyzer2 {
 //        semantic.goToParentLevel();
     }
 
+    //Sem done?
     private void tTypedef() {
         scanAndCheck(T_typedef);
-        tType();
+        Lexeme ancestor = tType();
         scanAndCheck(T_lsbracket);
 
         Lexeme number = sc.next();
+        int size = 0;
         switch (number.type) {
             case T_const10:
             case T_const16:
-//                return semantic.getConstType(next);
-                break;
             case T_id:
-//                check if const
+                size = sem.getConstNumber(number);
                 break;
             default:
                 throw new AnalyzeError(sc, number, T_const10, T_const16);
@@ -131,7 +135,7 @@ public class SyntaxAnalyzer2 {
         Lexeme id = sc.next();
         switch (id.type) {
             case T_id:
-                //check
+                sem.addType(ancestor, id, size);
                 break;
             default:
                 throw new AnalyzeError(sc, id, T_id);
@@ -139,6 +143,7 @@ public class SyntaxAnalyzer2 {
         scanAndCheck(T_semicolon);
     }
 
+    //Sem done?
     private void tConst() {
         scanAndCheck(T_const);
         tType();
@@ -146,7 +151,6 @@ public class SyntaxAnalyzer2 {
         Lexeme id = sc.next();
         switch (id.type) {
             case T_id:
-                //check
                 break;
             default:
                 throw new AnalyzeError(sc, id, T_id);
@@ -156,7 +160,7 @@ public class SyntaxAnalyzer2 {
         switch (number.type) {
             case T_const10:
             case T_const16:
-//                return semantic.getConstType(next);
+                sem.addConst(sem.getConstType(number), id);
                 break;
             default:
                 throw new AnalyzeError(sc, number, T_const10, T_const16);
@@ -165,9 +169,10 @@ public class SyntaxAnalyzer2 {
         scanAndCheck(T_semicolon);
     }
 
+    //Sem done?
     private void tBlock() {
         scanAndCheck(T_lbracket);
-//        semantic.startBlock();
+        sem.startBlock();
         if (sc.nextWithBackup().type != T_rbracket) {
             Lexeme lexeme;
             do {
@@ -178,13 +183,16 @@ public class SyntaxAnalyzer2 {
                 if (next.type == T_int || next.type == T_int64 || next.type == T_id && id.type == T_id) {
                     sc.setCurPosition(pos);
                     tDataDescription();
-                } else tPartOfBlock();
+                } else {
+                    sc.setCurPosition(pos);
+                    tPartOfBlock();
+                }
 
                 lexeme = sc.nextWithBackup();
             } while (lexeme.type != T_rbracket);
         }
         scanAndCheck(T_rbracket);
-//        semantic.goToParentLevel();
+        sem.goToParentLevel();
     }
 
     private void tPartOfBlock() {
@@ -201,27 +209,32 @@ public class SyntaxAnalyzer2 {
                 sc.next();
                 break;
             case T_id:
-                tAssignment();
+                tAssignment(false);
                 break;
             default:
                 throw new AnalyzeError(sc, lexeme, T_id, T_for, T_lbracket, T_semicolon);
         }
     }
 
-    private void tAssignment() {
+    private void tAssignment(boolean inFor) {
         Position pos = sc.getCurPosition();
         Lexeme identifier = scanAndCheck(T_id);
-        Lexeme skobka = sc.next();
+        Lexeme skobka = sc.nextWithBackup();
+
+        DataType dataType = null;
         if (skobka.type == T_lsbracket) {
             sc.setCurPosition(pos);
-            tArrayElement();
+            dataType = tArrayElement();
         }
-        DataType type = sem.getVariableType(identifier);
 
+
+        if(dataType==null)
+            sem.dropIfArray(identifier);
         Lexeme eq = scanAndCheck(T_assign);
-        tA0();
-//        semantic.checkAssignment(eq, type, A1());
-        scanAndCheck(T_semicolon);
+        sem.checkAssignment(eq, sem.getVariableType(identifier), tA0());
+
+        if (!inFor)
+            scanAndCheck(T_semicolon);
     }
 
     private void tFor() {
@@ -230,7 +243,7 @@ public class SyntaxAnalyzer2 {
         tDataDescription();
         tA0();
         scanAndCheck(T_semicolon);
-        tA0();
+        tAssignment(true);
         scanAndCheck(T_rparenthesis);
 
         Lexeme block = sc.nextWithBackup();
@@ -243,111 +256,131 @@ public class SyntaxAnalyzer2 {
         }
     }
 
-    private void tArrayElement() {
-        scanAndCheck(T_id);
+    private DataType tArrayElement() {
+        Lexeme lex = scanAndCheck(T_id);
+        Pair<DataType, Integer> arrInfo = sem.getArrayType(lex);
 
+        Position pos = sc.getCurPosition();
         Lexeme sbracket = scanAndCheck(T_lsbracket);
+        sc.setCurPosition(pos);
+        int inc = 0;
         while (sbracket.type == T_lsbracket) {
+            sc.next();
+            inc++;
             tA0();
             scanAndCheck(T_rsbracket);
-            sbracket = scanAndCheck(T_lsbracket);
+            sbracket = sc.nextWithBackup();
         }
+
+        if (inc != arrInfo.getValue())
+            throw new AnalyzeError(sc, lex, "Not an array element");
+
+        return arrInfo.getKey();
     }
 
-    private void tA0() {
-        A1();
+    private DataType tA0() {
+        DataType type = A1();
         Position pos = sc.getCurPosition();
         Lexeme or = sc.next();
         while (or.type == T_or) {
             A1();
+            type = DataType.tInt;
             pos = sc.getCurPosition();
             or = sc.next();
         }
 
         sc.setCurPosition(pos);
+        return type;
     }
 
-    private void A1() {
-        A2();
+    private DataType A1() {
+        DataType type = A2();
         Position pos = sc.getCurPosition();
         Lexeme and = sc.next();
         while (and.type == T_and) {
-            A2();
+            A1();
+            type = DataType.tInt;
             pos = sc.getCurPosition();
             and = sc.next();
         }
 
         sc.setCurPosition(pos);
+        return type;
     }
 
-    private void A2() {
-        A3();
+    private DataType A2() {
+        DataType type = A3();
         Position pos = sc.getCurPosition();
         Lexeme comp = sc.next();
         while (comp.type == T_less || comp.type == T_leq || comp.type == T_more || comp.type == T_meq || comp.type == T_eqaul || comp.type == T_neq) {
-            A3();
+            A2();
+            type = DataType.tInt;
             pos = sc.getCurPosition();
             comp = sc.next();
         }
 
         sc.setCurPosition(pos);
+        return type;
     }
 
-    private void A3() {
-        A4();
+    private DataType A3() {
+        DataType type = A4();
         Position pos = sc.getCurPosition();
         Lexeme plus = sc.next();
         while (plus.type == T_plus || plus.type == T_minus) {
-            A4();
+            type = sem.cast(type, A3());
             pos = sc.getCurPosition();
             plus = sc.next();
         }
 
         sc.setCurPosition(pos);
+        return type;
     }
 
-    private void A4() {
-        A5();
+    private DataType A4() {
+        DataType type = A5();
         Position pos = sc.getCurPosition();
         Lexeme mult = sc.next();
         while (mult.type == T_multiply || mult.type == T_division || mult.type == T_mod) {
-            A5();
+            type = sem.cast(type, A4());
             pos = sc.getCurPosition();
             mult = sc.next();
         }
 
         sc.setCurPosition(pos);
+        return type;
     }
 
-    private void A5() {
+    private DataType A5() {
+        DataType type = DataType.tInt;
         Position pos = sc.getCurPosition();
         Lexeme mult = sc.next();
+
         while (mult.type == T_not) {
             pos = sc.getCurPosition();
             mult = sc.next();
         }
         sc.setCurPosition(pos);
-        A6();
+        return sem.cast(type, A6());
     }
 
-    private void A6() {
+    private DataType A6() {
         Position pos = sc.getCurPosition();
         Lexeme next = sc.next();
         switch (next.type) {
             case T_const10:
             case T_const16:
-//                return semantic.getConstType(next);
-                break;
-            case T_lbracket:
-                tA0();
-                scanAndCheck(T_rbracket);
-                break;
+                return sem.getConstType(next);
+            case T_lparenthesis:
+                DataType type = tA0();
+                scanAndCheck(T_rparenthesis);
+                return type;
             case T_id:
                 if (sc.nextWithBackup().type == T_lsbracket) {
                     sc.setCurPosition(pos);
-                    tArrayElement();
+                    return tArrayElement();
                 }
-                break;
+                return sem.getVariableType(next);
             default:
                 throw new AnalyzeError(sc, next, T_const10, T_const16, T_id);
         }

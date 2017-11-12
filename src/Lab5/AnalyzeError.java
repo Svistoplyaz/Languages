@@ -33,7 +33,9 @@ public class AnalyzeError extends RuntimeException {
 		StringBuilder builder = new StringBuilder();
 //		builder.append(scanner.getSourceName());
 		builder.append("(line ");
-		builder.append(lexeme.line + 1);
+		builder.append(lexeme.line);
+		builder.append(", ");
+		builder.append(lexeme.ptr);
 		builder.append("): ");
 		int length = builder.length();
 		
