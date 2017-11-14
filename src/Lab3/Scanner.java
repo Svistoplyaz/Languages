@@ -32,6 +32,7 @@ public class Scanner {
 	public Scanner(Reader reader) {
 
 		this.reader = new BufferedReader(reader);
+//		lines.add
 
 		while(true){
 			try {
@@ -50,7 +51,7 @@ public class Scanner {
 			}
 		}
 
-		pickNextLine();
+		chooseLine(currentLine);
 	}
 
 	public void readAllLexemes(){
@@ -74,7 +75,7 @@ public class Scanner {
 
 	public void setCurPosition(Position pos){
 		currentLine = pos.line;
-		chooseLine(currentLine-1);
+		chooseLine(currentLine);
 		ptr = pos.ptr;
 	}
 
@@ -180,7 +181,6 @@ public class Scanner {
 	}
 	
 	private void skip() {
-
 		while (true){
 			if(line == null) return;
 
@@ -203,8 +203,9 @@ public class Scanner {
 	}
 	
 	public void pickNextLine() {
-        chooseLine(currentLine);
         currentLine++;
+        ptr = 0;
+        chooseLine(currentLine);
 //		try {
 //			String readed = all_lines.get(currentLine);
 //			if(readed != null) {

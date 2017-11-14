@@ -1,21 +1,27 @@
-int a, b, c;
-typedef int[10] mi;
-typedef mi[20] mii;
+typedef int e[20];
+typedef e f[30];
+
 int main(){
-    int i, j;
-    mii[i][j] = 0;
-    int c, d;
-    {
-        int c, f, g;
-    }
+    __int64 e1;
+    int f1;
+    f1 = 0  + 3 - 212 + 32423 + 4 - 22*(34%434/43434) - 234234324+ 23233423;
+    f l30;
+    typedef int b[100];
+    b xx;
+    xx[0][1][2] = 2;
+    l30[0][1] = 0;
+    l30[0] = 0;
+    l30 = 0;
+    typedef int e[10];
+    typedef e f[10];
+    f f2;
+    e e2;
+    f2[1 > 0][e1] = e2[10];
     int c;
     {
-        int c,f,d;
+        int c,d;
     }
-    c = d*a;
-    mi x;
-    mii y, z;
-    x = y;
-    x[a] = y[a][b][a] * mi[a];
-    a gg;
+    {
+        int a,d;
+    }
 }

@@ -16,11 +16,19 @@ public class SemanticAnalyzer {
 
     private final Node root = new Node(null, null, null);
     private Node current = root;
+    private boolean haveMain = false;
 
 //    private Node functionPointer, functionArgumentPointer;
 
     public SemanticAnalyzer(Scanner s) {
         sc = s;
+    }
+
+
+    public void addMain(Lexeme identifier) {
+        if(haveMain)
+            throw new AnalyzeError(sc, identifier, "main is already defined");
+        else haveMain = true;
     }
 
     public void addVariable(Lexeme type, Lexeme identifier) {
@@ -88,7 +96,7 @@ public class SemanticAnalyzer {
 
     private void alreadyDefined(Lexeme identifier, Node found) {
         String s1 = "Identifier '" + identifier.value + "' is already defined in the scope";
-        String s2 = "Previous declaration at line " + (found.lexeme.line + 1);
+        String s2 = "Previous declaration at line " + (found.lexeme.line);
         throw new AnalyzeError(sc, identifier, s1, s2);
     }
 
@@ -109,11 +117,24 @@ public class SemanticAnalyzer {
         current = current.right;
     }
 
+//    public Node findScope(String identifier) {
+//        Node node = current;
+//        while (node.lexeme != null) {
+//            if (node.lexeme.value.equals(identifier)) return node;
+//            node = node.parent;
+//        }
+//        return null;
+//    }
+
     public Node findScope(String identifier) {
         Node node = current;
-        while (node.lexeme != null) {
-            if (node.lexeme.value.equals(identifier)) return node;
+        if(current == root)
+            return null;
+        while (node != node.parent.right) {
+            if (node.lexeme != null && node.lexeme.value.equals(identifier)) return node;
             node = node.parent;
+            if(node.equals(root))
+                return null;
         }
         return null;
     }
@@ -132,7 +153,7 @@ public class SemanticAnalyzer {
 
         if(arr == null)
             throw new AnalyzeError(sc, array, "Variable '" + array.value + "' is not defined in the scope");
-        if(!arr.isType)
+        if(!arr.isArray)
             throw new AnalyzeError(sc, array, "Not an array");
         return new Pair<>(arr.type, arr.allsizes.length);
     }
@@ -258,6 +279,14 @@ public class SemanticAnalyzer {
         builder.append("\n");
         printTree(builder, node.right, level + 1);
         printTree(builder, node.left, level);
+    }
+
+    public void dropIfType(Lexeme id) {
+        Node node = find(id.value);
+        if(node == null)
+            return;
+        if(node.isType)
+            throw new AnalyzeError(sc, id, "It is type");
     }
 
     private static class Node {

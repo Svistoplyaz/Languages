@@ -10,7 +10,7 @@ public class Lexeme {
     public Lexeme(Type t, String v, int l, int p) {
         type = t;
         value = v;
-        line = l;
+        line = l+1;
         ptr = p;
     }
 

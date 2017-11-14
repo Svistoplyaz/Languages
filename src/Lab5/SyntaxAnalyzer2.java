@@ -91,8 +91,8 @@ public class SyntaxAnalyzer2 {
             Lexeme assignment = sc.next();
             if (assignment.type == T_assign) {
                 DataType dataType = DataType.tArray;
-                if(t.type == T_int) dataType = DataType.tInt;
-                if(t.type == T_int64) dataType = DataType.tInt64;
+                if (t.type == T_int) dataType = DataType.tInt;
+                if (t.type == T_int64) dataType = DataType.tInt64;
                 sem.checkAssignment(assignment, dataType, tA0());
             } else sc.setCurPosition(pos);
 
@@ -104,23 +104,30 @@ public class SyntaxAnalyzer2 {
     }
 
     private void tMain() {
-        sc.next();
-        sc.next();
-
+        scanAndCheck(T_int);
+        Lexeme main = scanAndCheck(T_main);
+        sem.addMain(main);
         scanAndCheck(T_lparenthesis);
         scanAndCheck(T_rparenthesis);
         tBlock();
-//        semantic.goToParentLevel();
     }
 
     //Sem done?
     private void tTypedef() {
         scanAndCheck(T_typedef);
         Lexeme ancestor = tType();
-        scanAndCheck(T_lsbracket);
 
+        Lexeme id = sc.next();
+        switch (id.type) {
+            case T_id:
+                break;
+            default:
+                throw new AnalyzeError(sc, id, T_id);
+        }
+
+        scanAndCheck(T_lsbracket);
         Lexeme number = sc.next();
-        int size = 0;
+        int size;
         switch (number.type) {
             case T_const10:
             case T_const16:
@@ -130,16 +137,10 @@ public class SyntaxAnalyzer2 {
             default:
                 throw new AnalyzeError(sc, number, T_const10, T_const16);
         }
-
         scanAndCheck(T_rsbracket);
-        Lexeme id = sc.next();
-        switch (id.type) {
-            case T_id:
-                sem.addType(ancestor, id, size);
-                break;
-            default:
-                throw new AnalyzeError(sc, id, T_id);
-        }
+
+        sem.addType(ancestor, id, size);
+
         scanAndCheck(T_semicolon);
     }
 
@@ -180,11 +181,14 @@ public class SyntaxAnalyzer2 {
                 Lexeme next = sc.next();
                 Lexeme id = sc.next();
 
+                sc.setCurPosition(pos);
                 if (next.type == T_int || next.type == T_int64 || next.type == T_id && id.type == T_id) {
-                    sc.setCurPosition(pos);
+//                    sc.setCurPosition(pos);
                     tDataDescription();
+                } else if (next.type == T_typedef) {
+                    tTypedef();
                 } else {
-                    sc.setCurPosition(pos);
+//                    sc.setCurPosition(pos);
                     tPartOfBlock();
                 }
 
@@ -216,22 +220,29 @@ public class SyntaxAnalyzer2 {
         }
     }
 
-    private void tAssignment(boolean inFor) {
+    private DataType workWithIdOrArray() {
         Position pos = sc.getCurPosition();
         Lexeme identifier = scanAndCheck(T_id);
+        sem.dropIfType(identifier);
         Lexeme skobka = sc.nextWithBackup();
 
         DataType dataType = null;
         if (skobka.type == T_lsbracket) {
             sc.setCurPosition(pos);
             dataType = tArrayElement();
+        } else {
+            sem.dropIfArray(identifier);
+            dataType = sem.getVariableType(identifier);
         }
 
+        return dataType;
+    }
 
-        if(dataType==null)
-            sem.dropIfArray(identifier);
+    private void tAssignment(boolean inFor) {
+        DataType dataType = workWithIdOrArray();
+
         Lexeme eq = scanAndCheck(T_assign);
-        sem.checkAssignment(eq, sem.getVariableType(identifier), tA0());
+        sem.checkAssignment(eq, dataType, tA0());
 
         if (!inFor)
             scanAndCheck(T_semicolon);
@@ -272,8 +283,10 @@ public class SyntaxAnalyzer2 {
             sbracket = sc.nextWithBackup();
         }
 
-        if (inc != arrInfo.getValue())
-            throw new AnalyzeError(sc, lex, "Not an array element");
+        if (inc > arrInfo.getValue())
+            throw new AnalyzeError(sc, lex, "Array type expected");
+        else if (inc < arrInfo.getValue())
+            throw new AnalyzeError(sc, lex, "Can't cast this type");
 
         return arrInfo.getKey();
     }
@@ -376,11 +389,8 @@ public class SyntaxAnalyzer2 {
                 scanAndCheck(T_rparenthesis);
                 return type;
             case T_id:
-                if (sc.nextWithBackup().type == T_lsbracket) {
-                    sc.setCurPosition(pos);
-                    return tArrayElement();
-                }
-                return sem.getVariableType(next);
+                sc.setCurPosition(pos);
+                return workWithIdOrArray();
             default:
                 throw new AnalyzeError(sc, next, T_const10, T_const16, T_id);
         }
