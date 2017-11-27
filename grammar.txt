@@ -1,0 +1,31 @@
+S -> E S ^ #
+E -> C ; ^ int E1 ; ^ T ^ D2 ;
+E1 -> L ^ M
+M -> main ( ) { B }
+B -> P B ^ D1 ; B ^ #
+P -> AS ; ^ F ^ ; ^ { B }
+F -> for ( D1 ; A0 ; A0 ) P
+T -> typedef TY I T1 ;
+T1 -> [ N ] ^ [ I ]
+C -> const TY I N
+BR -> [ A0 ] BR ^ #
+D2 -> __int64 L ^ I L
+D1 -> TY L
+TY -> I ^ __int64 ^ int
+AS1 -> AS ^ #
+AS -> = A0
+L -> I AS1 L1
+L1 -> , I AS1
+N -> N10 ^ N16
+A0 -> A1 AD0  
+AD0 -> || A1 AD0 ^ #
+A1 -> A2 AD1
+AD1 -> && A2 AD1 ^ #
+A2 -> A3 AD2
+AD2 -> < A3 AD2 ^ > A3 AD2 ^ <= A3 AD2 ^ >= A3 AD2 ^ == A3 AD2 ^ != A3 AD2 ^ #
+A3 -> A4 AD3
+AD3 -> + A4 AD3 ^ - A4 AD3 ^ #
+A4 -> A5 AD4
+AD4 -> * A5 AD4 ^ / A5 AD4 ^ % A5 AD4 ^ #
+A5 -> ! A5 ^ A6
+A6 -> ( A0 ) ^ I BR ^ N

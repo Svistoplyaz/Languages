@@ -28,7 +28,8 @@ public class Scanner {
 	private StringBuilder current = new StringBuilder();
 
 	private ArrayList<String> all_lines = new ArrayList<>();
-	
+	private String sourceName;
+
 	public Scanner(Reader reader) {
 
 		this.reader = new BufferedReader(reader);
@@ -238,6 +239,10 @@ public class Scanner {
 		current.append(line[ptr]);
 		ptr++;
 		return finishLexeme(type2);
+	}
+	
+	public String getSourceName() {
+		return sourceName;
 	}
 	
 	private boolean isLetter(char c) {
