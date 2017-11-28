@@ -21,7 +21,7 @@ public class LLkAnalyzer {
 		scanner = source;
 	}
 
-	public void program() {
+	public void tProgram() {
 		Stack<Element> stack = new Stack<>();
 		stack.add(controlTable.getEndTerminal());
 		stack.add(controlTable.getAxiom());

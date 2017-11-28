@@ -2,8 +2,8 @@ typedef int e[20];
 typedef e f[30];
 
 int main(){
-    __int64 e1;
     int f1;
+    __int64 e1;
     f1 = 0  + 3 - 212 + 32423 + 4 - 22*(34%434/43434) - 234234324+ 23233423;
     f l30;
     typedef int b[100];
