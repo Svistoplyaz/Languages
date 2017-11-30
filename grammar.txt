@@ -2,8 +2,9 @@ S -> E S ^ #
 E -> C ^ int E1 ^ T ^ D2
 E1 -> L ; ^ M
 M -> main ( ) { B }
-B -> P B ^ D1 B ^ #
-P -> I AS ; ^ F ^ ; ^ { B }
+B -> I B1 B ^ P B ^ D1 B ^ #
+B1 -> L ^ BR AS
+P -> I AS ; ^ F ^ ; ^ { B } ^ T
 F -> for ( D1 A0 ; I AS ) P
 T -> typedef TY I T1 ;
 T1 -> [ N ] ^ [ I ]
@@ -29,4 +30,7 @@ A4 -> A5 AD4
 AD4 -> * A5 AD4 ^ / A5 AD4 ^ % A5 AD4 ^ #
 A5 -> ! A5 ^ A6
 A6 -> ( A0 ) ^ I BR ^ N
-I -> I1
+
+
+
+B -> P B ^ D1 B ^ #
