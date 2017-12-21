@@ -1,0 +1,56 @@
+S -> S const C1 ; ^ S int main ( ) M1 ^ S typedef T2 ; ^ S int D1 ; ^ S __int64 D1 ; ^ S I D1 ; ^ M ^ D ; ^ T ^ C
+T2 -> TY I T1
+C -> const C1 ;
+C1 -> TY I N
+M -> int main ( ) M1
+M1 -> { B } ^ { }
+B -> B { B } ^ B { } ^ B int D1 ; ^ B __int64 D1 ; ^ B I D1 ; ^ B typedef T2 ; ^ B I AS1 ; ^ B for ( D ; A0 ; AS ) P ^ D ; ^ T ^ P
+AS1 -> = A0
+P -> AS ; ^ F ^ ; ^ M1
+F -> for ( D ; A0 ; AS ) P
+AS -> I = A0
+D -> TY I AS1 ^ TY I AS1 , L ^ TY I ^ TY I , L
+D1 -> I AS1 ^ I AS1 , L ^ I ^ I , L
+L -> L , I ^ L , I AS1 ^ I ^ I AS1
+T -> typedef T2 ;
+T1 -> [ N ] ^ [ I1 ]
+I1 -> I
+TY -> I ^ __int64 ^ int
+A0 -> A0 || A1 ^ A1
+A1 -> A1 && A2 ^ A2
+A2 -> A2 < A3 ^ A2 > A3 ^ A2 <= A3 ^ A2 >= A3 ^ A2 == A3 ^ A2 != A3 ^ A3
+A3 -> A3 + A4 ^ A3 - A4 ^ A4
+A4 -> A4 * A5 ^ A4 / A5 ^ A4 % A5 ^ A5
+A5 -> ! A5 ^ A6
+A6 -> ( A0 ) ^ I ^ I BR ^ N
+BR -> [ A0 ] BR
+N -> N10 ^ N16
+
+//Ниже первый вариант верно отформатированный для Precedence Analyzer
+
+S -> S const TY I N ; ^ S int main ( ) { R ^ S typedef TY I T1 ; ^ S int D1 ; ^ S __int64 D1 ; ^ S I D1 ; ^ M ^ D ; ^ T ^ C
+C -> const TY I N ;
+M -> int main ( ) { R
+B -> B { R ^ B int D1 ; ^ B __int64 D1 ; ^ B I D1 ; ^ B typedef TY I T1 ; ^ B I = A0 ; ^ B for ( D ; A0 ; AS ) P ^ D ; ^ T ^ P
+P -> AS ; ^ F ^ ; ^ { R
+R -> B } ^ }
+F -> for ( D ; A0 ; AS ) P
+AS -> I = A0
+D -> TY I = A0 ^ TY I = A0 , L ^ TY I ^ TY I , L
+D1 -> I = A0 ^ I = A0 , L ^ I ^ I , L
+L -> L , I ^ L , I = A0 ^ I ^ I = A0
+T -> typedef TY I T1 ;
+T1 -> [ N ] ^ [ I ]
+C -> const TY I N
+TY -> I ^ __int64 ^ int
+A0 -> A0 || A1 ^ A1
+A1 -> A1 && A2 ^ A2
+A2 -> A2 < A3 ^ A2 > A3 ^ A2 <= A3 ^ A2 >= A3 ^ A2 == A3 ^ A2 != A3 ^ A3
+A3 -> A3 + A4 ^ A3 - A4 ^ A4
+A4 -> A4 * A5 ^ A4 / A5 ^ A4 % A5 ^ A5
+A5 -> ! A5 ^ A6
+A6 -> ( A0 ) ^ I ^ I BR ^ N
+BR -> [ A0 ] BR
+N -> N10 ^ N16
+
+
