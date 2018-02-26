@@ -1,13 +1,13 @@
-//package Lab5;
+//package semester7.Lab5;
 //
-//import Lab3.*;
-//import Lab3.Type;
-//import Lab3.Lexeme;
+//import semester7.Lab3.*;
+//import semester7.Lab3.Type;
+//import semester7.Lab3.Lexeme;
 //import javafx.util.Pair;
 //
 //import java.io.FileReader;
 //
-//import static Lab3.Type.*;
+//import static semester7.Lab3.Type.*;
 //
 ///**
 // * Created by Alexander on 18.10.2017.

@@ -1,4 +1,4 @@
-package operatorPrecedence;
+package semester7.operatorPrecedence;
 
 /**
  * Created by Alexandr on 16.12.2017.

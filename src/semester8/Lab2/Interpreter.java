@@ -1,17 +1,18 @@
-package Lab5;
+package semester8.Lab2;
+
+import javafx.util.Pair;
+import semester7.Lab3.Lexeme;
+import semester7.Lab3.Scanner;
+import semester7.Lab3.Type;
+import semester7.Lab5.AnalyzeError;
+import semester7.Lab5.DataType;
 
 import java.math.BigInteger;
 
-import Lab3.Scanner;
-import Lab3.Lexeme;
-import Lab3.Type;
-import javafx.util.Pair;
+import static semester7.Lab3.Type.T_int;
+import static semester7.Lab3.Type.T_int64;
 
-import static Lab3.Type.*;
-
-public class SemanticAnalyzer {
-
-
+public class Interpreter {
     private final Scanner sc;
 
     private final Node root = new Node(null, null, null);
@@ -20,7 +21,7 @@ public class SemanticAnalyzer {
 
 //    private Node functionPointer, functionArgumentPointer;
 
-    public SemanticAnalyzer(Scanner s) {
+    public Interpreter(Scanner s) {
         sc = s;
     }
 
@@ -335,4 +336,3 @@ public class SemanticAnalyzer {
     }
 
 }
-

@@ -1,15 +1,14 @@
-package Lab5;
+package semester7.Lab5;
 
-import Lab3.Lexeme;
-import Lab3.Position;
-import Lab3.Scanner;
-import Lab3.Type;
-import javafx.geometry.Pos;
+import semester7.Lab3.Lexeme;
+import semester7.Lab3.Position;
+import semester7.Lab3.Scanner;
+import semester7.Lab3.Type;
 import javafx.util.Pair;
 
 import java.io.FileReader;
 
-import static Lab3.Type.*;
+import static semester7.Lab3.Type.*;
 
 public class SyntaxAnalyzer2 {
     private Scanner sc;

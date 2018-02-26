@@ -1,10 +1,10 @@
-package Lab5;
+package semester7.Lab5;
 
 
 
-import Lab3.Lexeme;
-import Lab3.Scanner;
-import Lab3.Type;
+import semester7.Lab3.Lexeme;
+import semester7.Lab3.Scanner;
+import semester7.Lab3.Type;
 
 import java.util.function.Supplier;
 

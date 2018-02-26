@@ -1,6 +1,6 @@
-package operatorPrecedence;
+package semester7.operatorPrecedence;
 
-import llk.Grammar;
+import semester7.llk.Grammar;
 
 import java.io.File;
 import java.util.ArrayList;

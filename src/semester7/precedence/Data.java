@@ -1,7 +1,7 @@
-package precedence;
+package semester7.precedence;
 
-import Lab3.Type;
-import llk.Grammar;
+import semester7.Lab3.Type;
+import semester7.llk.Grammar;
 
 import java.io.Serializable;
 import java.util.HashMap;

@@ -1,9 +1,9 @@
-package llk;
+package semester7.llk;
 
-import Lab3.*;
-import Lab5.AnalyzeError;
+import semester7.Lab3.*;
+import semester7.Lab5.AnalyzeError;
 import org.apache.commons.lang3.SerializationUtils;
-import static llk.Table.*;
+import static semester7.llk.Table.*;
 
 import java.io.File;
 import java.io.FileInputStream;

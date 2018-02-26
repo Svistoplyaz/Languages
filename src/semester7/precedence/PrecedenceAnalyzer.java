@@ -1,12 +1,12 @@
-package precedence;
+package semester7.precedence;
 
-import Lab3.Type;
-import Lab3.Scanner;
-import Lab3.Lexeme;
-import Lab5.AnalyzeError;
-import Lab5.SemanticAnalyzer;
-import llk.Grammar;
-import llk.Grammar.Rule;
+import semester7.Lab3.Type;
+import semester7.Lab3.Scanner;
+import semester7.Lab3.Lexeme;
+import semester7.Lab5.AnalyzeError;
+import semester7.Lab5.SemanticAnalyzer;
+import semester7.llk.Grammar;
+import semester7.llk.Grammar.Rule;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.File;

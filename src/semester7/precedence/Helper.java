@@ -1,7 +1,7 @@
-package precedence;
+package semester7.precedence;
 
-import llk.Grammar;
-import llk.Grammar.Rule;
+import semester7.llk.Grammar;
+import semester7.llk.Grammar.Rule;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.tuple.Pair;

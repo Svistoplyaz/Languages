@@ -1,7 +1,7 @@
-package precedence;
+package semester7.precedence;
 
-import Lab3.Type;
-import llk.Grammar;
+import semester7.Lab3.Type;
+import semester7.llk.Grammar;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
@@ -121,7 +121,7 @@ public class Table implements Serializable {
 	}
 	
 	public void exportToExcel(File file) throws Exception {
-		System.out.println("Writing precedence table to " + file.getName() + "...");
+		System.out.println("Writing semester7.precedence table to " + file.getName() + "...");
 		
 		HSSFWorkbook workbook = new HSSFWorkbook();
 		HSSFSheet sheet = workbook.createSheet("Precedence table");

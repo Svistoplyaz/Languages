@@ -1,6 +1,6 @@
-package llk;
+package semester7.llk;
 
-import Lab3.Type;
+import semester7.Lab3.Type;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;

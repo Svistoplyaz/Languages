@@ -1,8 +1,8 @@
-package llk;
+package semester7.llk;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SerializationUtils;
-import static llk.Grammar.Rule;
+import static semester7.llk.Grammar.Rule;
 
 import java.io.*;
 import java.util.*;
@@ -52,7 +52,7 @@ public class Generator {
 		System.out.println();
 		
 		// Сериализация полученной таблицы
-		File file = new File("table.llk");
+		File file = new File("table.semester7.llk");
 		FileUtils.writeByteArrayToFile(file, SerializationUtils.serialize(table));
 		System.out.println("Control table serialized and saved to " + file);
 	}

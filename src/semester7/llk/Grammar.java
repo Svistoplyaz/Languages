@@ -1,7 +1,7 @@
-package llk;
+package semester7.llk;
 
-import Lab3.Scanner;
-import Lab3.Type;
+import semester7.Lab3.Scanner;
+import semester7.Lab3.Type;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.*;

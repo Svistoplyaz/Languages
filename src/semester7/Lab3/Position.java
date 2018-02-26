@@ -1,4 +1,4 @@
-package Lab3;
+package semester7.Lab3;
 
 public class Position {
     int line;

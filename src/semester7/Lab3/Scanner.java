@@ -1,6 +1,4 @@
-package Lab3;
-
-import javafx.util.Pair;
+package semester7.Lab3;
 
 import java.io.BufferedReader;
 import java.io.Reader;

@@ -1,4 +1,4 @@
-package Lab5;
+package semester7.Lab5;
 
 public enum DataType {
     tInt("int"), tInt64("__int64"), tBlock(null), tArray("array");
