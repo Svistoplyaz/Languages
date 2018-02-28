@@ -187,6 +187,8 @@ public class SemanticAnalyzer {
                     throw new AnalyzeError(sc, lex, "Not defined");
                 if (!con.isConst)
                     throw new AnalyzeError(sc, lex, "Not constant");
+
+                //WTF I've done here???
                 return Integer.parseInt(lex.value);
         }
 
