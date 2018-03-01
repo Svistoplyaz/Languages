@@ -128,7 +128,7 @@ public class SyntaxAnalyzer3 {
 
         scanAndCheck(T_lsbracket);
         Lexeme number = sc.next();
-        int size;
+        long size;
         switch (number.type) {
             case T_const10:
             case T_const16:
@@ -140,7 +140,7 @@ public class SyntaxAnalyzer3 {
         }
         scanAndCheck(T_rsbracket);
 
-        inter.addType(ancestor, id, size);
+        inter.addType(ancestor, id, (int) size);
 
         scanAndCheck(T_semicolon);
     }
@@ -221,7 +221,7 @@ public class SyntaxAnalyzer3 {
         }
     }
 
-    private DataType workWithIdOrArray() {
+    private Pair<DataType,Long> workWithIdOrArray() {
         Position pos = sc.getCurPosition();
         Lexeme identifier = scanAndCheck(T_id);
         inter.dropIfType(identifier);
@@ -292,103 +292,144 @@ public class SyntaxAnalyzer3 {
         return arrInfo.getKey();
     }
 
-    private DataType tA0() {
-        DataType type = A1();
+    private Pair<DataType,Long> tA0() {
+        Pair<DataType,Long> pair = A1();
+        DataType type = pair.getKey();
+        long ans = pair.getValue();
+
         Position pos = sc.getCurPosition();
         Lexeme or = sc.next();
         while (or.type == T_or) {
-            A1();
+            //Разве здесь не А0?
+            pair = A1();
+            ans = inter.calculateA0(ans, pair.getValue());
+
             type = DataType.tInt;
             pos = sc.getCurPosition();
             or = sc.next();
         }
 
         sc.setCurPosition(pos);
-        return type;
+        return new Pair<>(type, ans);
     }
 
-    private DataType A1() {
-        DataType type = A2();
+    private Pair<DataType,Long> A1() {
+        Pair<DataType,Long> pair = A2();
+        DataType type = pair.getKey();
+        long ans = pair.getValue();
+
         Position pos = sc.getCurPosition();
         Lexeme and = sc.next();
         while (and.type == T_and) {
-            A1();
+            pair = A1();
+            ans = inter.calculateA1(ans, pair.getValue());
+
             type = DataType.tInt;
             pos = sc.getCurPosition();
             and = sc.next();
         }
 
         sc.setCurPosition(pos);
-        return type;
+        return new Pair<>(type, ans);
     }
 
-    private DataType A2() {
-        DataType type = A3();
+    private Pair<DataType,Long> A2() {
+        Pair<DataType,Long> pair = A3();
+        DataType type = pair.getKey();
+        long ans = pair.getValue();
+
         Position pos = sc.getCurPosition();
         Lexeme comp = sc.next();
         while (comp.type == T_less || comp.type == T_leq || comp.type == T_more || comp.type == T_meq || comp.type == T_eqaul || comp.type == T_neq) {
-            A2();
+            pair = A2();
+            ans = inter.calculateA2(ans, pair.getValue(),comp.type);
+
             type = DataType.tInt;
             pos = sc.getCurPosition();
             comp = sc.next();
         }
 
         sc.setCurPosition(pos);
-        return type;
+        return new Pair<>(type, ans);
     }
 
-    private DataType A3() {
-        DataType type = A4();
+    private Pair<DataType,Long> A3() {
+        Pair<DataType,Long> pair = A4();
+        DataType type = pair.getKey();
+        long ans = pair.getValue();
+
         Position pos = sc.getCurPosition();
         Lexeme plus = sc.next();
         while (plus.type == T_plus || plus.type == T_minus) {
-            type = inter.cast(type, A3());
+            pair = A3();
+            type = inter.cast(type, pair.getKey());
+            ans = inter.calculateA3(ans, pair.getValue(),plus.type);
+            if(type == DataType.tInt)
+                ans = (int)ans;
+
             pos = sc.getCurPosition();
             plus = sc.next();
         }
 
         sc.setCurPosition(pos);
-        return type;
+        return new Pair<>(type, ans);
     }
 
-    private DataType A4() {
-        DataType type = A5();
+    private Pair<DataType,Long> A4() {
+        Pair<DataType,Long> pair = A5();
+        DataType type = pair.getKey();
+        long ans = pair.getValue();
+
         Position pos = sc.getCurPosition();
         Lexeme mult = sc.next();
         while (mult.type == T_multiply || mult.type == T_division || mult.type == T_mod) {
-            type = inter.cast(type, A4());
+            pair = A4();
+            type = inter.cast(type, pair.getKey());
+            ans = inter.calculateA4(ans, pair.getValue(),mult.type);
+            if(type == DataType.tInt)
+                ans = (int)ans;
+
             pos = sc.getCurPosition();
             mult = sc.next();
         }
 
         sc.setCurPosition(pos);
-        return type;
+        return new Pair<>(type, ans);
     }
 
-    private DataType A5() {
-        DataType type = DataType.tInt;
+    private Pair<DataType,Long> A5() {
         Position pos = sc.getCurPosition();
         Lexeme mult = sc.next();
+        int inc = 0;
 
         while (mult.type == T_not) {
             pos = sc.getCurPosition();
             mult = sc.next();
+            inc++;
         }
         sc.setCurPosition(pos);
-        return inter.cast(type, A6());
+
+        Pair<DataType,Long> pair = A6();
+        long ans = inter.calculateA5(pair.getValue(),inc);
+        return new Pair<>(DataType.tInt, ans);
     }
 
-    private DataType A6() {
+    private Pair<DataType,Long> A6() {
         Position pos = sc.getCurPosition();
         Lexeme next = sc.next();
+        DataType cur;
         switch (next.type) {
             case T_const10:
             case T_const16:
-                return inter.getConstType(next);
+                cur = inter.getConstType(next);
+                if(cur == DataType.tInt)
+                    return new Pair<>(cur,(long)(int)(inter.getConstNumber(next)));
+                else
+                    return new Pair<>(cur,inter.getConstNumber(next));
             case T_lparenthesis:
-                DataType type = tA0();
+                Pair<DataType,Long> pair = tA0();
                 scanAndCheck(T_rparenthesis);
-                return type;
+                return pair;
             case T_id:
                 sc.setCurPosition(pos);
                 return workWithIdOrArray();

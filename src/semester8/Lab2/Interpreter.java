@@ -14,6 +14,8 @@ import static semester7.Lab3.Type.T_int64;
 
 public class Interpreter {
     private final Scanner sc;
+    private final int tooBig = 10000001;
+    private long limit = 0;
 
     private final Node root = new Node(null, null, null);
     private Node current = root;
@@ -27,31 +29,34 @@ public class Interpreter {
 
 
     public void addMain(Lexeme identifier) {
-        if(haveMain)
+        if (haveMain)
             throw new AnalyzeError(sc, identifier, "main is already defined");
         else haveMain = true;
     }
 
     /**
      * Creates new variable NodeId
+     *
      * @param type
      * @param identifier
      */
     public void addVariable(Lexeme type, Lexeme identifier) {
-        if(type.type == T_int || type.type == T_int64) {
+        if (type.type == T_int || type.type == T_int64) {
             Node node = findScope(identifier.value);
             if (node != null) alreadyDefined(identifier, node);
 
             DataType dataType = type.type == T_int ? DataType.tInt : DataType.tInt64;
             current.left = new NodeId(current, dataType, identifier, false);
             current = current.left;
-        }else{
+            increaseLimit(1, identifier);
+        } else {
             addArray(type, identifier);
         }
     }
 
     /**
      * Creates new const NodeId
+     *
      * @param type
      * @param identifier
      */
@@ -61,11 +66,13 @@ public class Interpreter {
 
         current.left = new NodeId(current, type, identifier, true);
         current = current.left;
+        increaseLimit(1, identifier);
     }
 
     /**
      * Adds new NodeArray to your tree/branch
-     * @param typedef type of new array
+     *
+     * @param typedef    type of new array
      * @param identifier id of new array
      */
     public void addArray(Lexeme typedef, Lexeme identifier) {
@@ -73,22 +80,28 @@ public class Interpreter {
         if (node != null) alreadyDefined(identifier, node);
 
         Node typeN = find(typedef.value);
-        if(typeN == null)
+        if (typeN == null)
             throw new AnalyzeError(sc, typedef, typedef.value + " Isn't defined as Type");
         if (!(typeN instanceof NodeType))
             throw new AnalyzeError(sc, typedef, "Isn't a type");
 
         current.left = new NodeArray(current, (NodeType) typeN, identifier);
         current = current.left;
+        increaseLimit(((NodeArray) current).length(), identifier);
     }
 
     /**
      * Adds new NodeType to your tree/branch
-     * @param ancestor ancestor type(basic or created by typedef)
+     *
+     * @param ancestor   ancestor type(basic or created by typedef)
      * @param identifier id of new type
-     * @param size size of new dimension
+     * @param realSize   size of new dimension
      */
-    public void addType(Lexeme ancestor, Lexeme identifier, int size) {
+    public void addType(Lexeme ancestor, Lexeme identifier, long realSize) {
+        if (realSize >= tooBig)
+            throw new AnalyzeError(sc, ancestor, "Can't declare type, size is too big");
+
+        int size = (int) realSize;
         Node node = findScope(identifier.value);
         if (node != null) alreadyDefined(identifier, node);
 
@@ -98,7 +111,7 @@ public class Interpreter {
         if (ancestor.type != T_int && ancestor.type != T_int64) {
             //Tries to find ancestor
             Node typeN = find(ancestor.value);
-            if(typeN == null)
+            if (typeN == null)
                 throw new AnalyzeError(sc, ancestor, ancestor.value + " Isn't defined as a Type");
             if (!(typeN instanceof NodeType))
                 throw new AnalyzeError(sc, ancestor, "Isn't a type");
@@ -106,7 +119,10 @@ public class Interpreter {
             /*
             Вставить сюда проверку на длину массива
             */
-            current.left = new NodeType(current, (NodeType) typeN, identifier, size);
+            if (((NodeType) typeN).getComboLength() * size < tooBig)
+                current.left = new NodeType(current, (NodeType) typeN, identifier, size);
+            else
+                throw new AnalyzeError(sc, ancestor, "Can't declare type, size is too big");
         } else {
             /*
             Вставить сюда проверку на длину массива
@@ -121,6 +137,7 @@ public class Interpreter {
 
     /**
      * Throws excpetion that variable is already defined
+     *
      * @param identifier
      * @param found
      */
@@ -161,13 +178,14 @@ public class Interpreter {
 
     /**
      * Tries to find node with identifier in current branch
+     *
      * @param identifier Lexeme id of Node object
      * @return null if nothing was find
      * or Node object if current branch already has this id
      */
     public Node findScope(String identifier) {
         Node node = current;
-        if(current == root)
+        if (current == root)
             return null;
         //While we are in current branch
         while (node != node.parent.right) {
@@ -177,7 +195,7 @@ public class Interpreter {
 
             //Goind upwards
             node = node.parent;
-            if(node.equals(root))
+            if (node.equals(root))
                 return null;
         }
         return null;
@@ -185,6 +203,7 @@ public class Interpreter {
 
     /**
      * Tries to find node with identifier in all upward tree
+     *
      * @param identifier Lexeme id of Node object
      * @return null if nothing was find
      * or Node object if current branch already has this id
@@ -204,15 +223,15 @@ public class Interpreter {
     public Pair<DataType, Integer> getArrayType(Lexeme array) {
         Node arr = find(array.value);
 
-        if(arr == null)
+        if (arr == null)
             throw new AnalyzeError(sc, array, "Variable '" + array.value + "' is not defined in the scope");
-        if(!(arr instanceof NodeArray))
+        if (!(arr instanceof NodeArray))
             throw new AnalyzeError(sc, array, "Not an array");
-        return new Pair<>(arr.type, arr.allsizes.length);
+        return new Pair<>(arr.type, ((NodeArray) arr).dimensions());
     }
 
     public DataType cast(DataType a, DataType b) {
-        if(a == DataType.tArray || b == DataType.tArray) return null;
+        if (a == DataType.tArray || b == DataType.tArray) return null;
         if (a == DataType.tInt64 || b == DataType.tInt64) return DataType.tInt64;
         if (a == DataType.tInt || b == DataType.tInt) return DataType.tInt;
         return null;
@@ -231,8 +250,8 @@ public class Interpreter {
             case T_const10:
             case T_const16:
                 BigInteger value = new BigInteger(lex.value, lex.type == Type.T_const10 ? 10 : 16);
-                if (value.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) <= 0)
-                    return value.intValue();
+                if (value.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) <= 0)
+                    return value.longValue();
                 break;
             case T_id:
                 Node con = find(lex.value);
@@ -265,9 +284,9 @@ public class Interpreter {
 
     public void dropIfArray(Lexeme lexeme) {
         Node node = find(lexeme.value);
-        if(node == null)
+        if (node == null)
             return;
-        if(node instanceof NodeArray)
+        if (node instanceof NodeArray)
             throw new AnalyzeError(sc, lexeme, "It is array");
     }
 
@@ -294,12 +313,138 @@ public class Interpreter {
         printTree(builder, node.left, level);
     }
 
+    public long calculateA0(long first, long second) {
+        boolean f, s;
+        f = first != 0;
+        s = second != 0;
+
+        if (f || s)
+            return 1;
+        else
+            return 0;
+    }
+
+    public long calculateA1(long first, long second) {
+        boolean f, s;
+        f = first != 0;
+        s = second != 0;
+
+        if (f && s)
+            return 1;
+        else
+            return 0;
+    }
+
+    public long calculateA2(long first, long second, Type type) {
+        boolean ans = false;
+        switch (type) {
+            case T_less:
+                ans = first < second;
+                break;
+            case T_leq:
+                ans = first <= second;
+                break;
+            case T_more:
+                ans = first > second;
+                break;
+            case T_meq:
+                ans = first >= second;
+                break;
+            case T_eqaul:
+                ans = first >= second;
+                break;
+            case T_neq:
+                ans = first >= second;
+                break;
+            default:
+                try {
+                    throw new Exception("SHITSTORM A2 !!!");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+        }
+
+        if (ans)
+            return 1;
+        else
+            return 0;
+    }
+
+    public long calculateA3(long first, long second, Type type) {
+        switch (type) {
+            case T_plus:
+                return first + second;
+            case T_minus:
+                return first - second;
+            default:
+                try {
+                    throw new Exception("SHITSTORM A3 !!!");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+        }
+
+        return 0;
+    }
+
+    public long calculateA4(long first, long second, Type type) {
+        switch (type) {
+            case T_multiply:
+                return first * second;
+            case T_division:
+                return first / second;
+            case T_mod:
+                return first % second;
+            default:
+                try {
+                    throw new Exception("SHITSTORM A3 !!!");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+        }
+
+        return 0;
+    }
+
+    public long calculateA5(long first, int inc) {
+        boolean f = first != 0;
+
+        if (inc % 2 == 1 && !f)
+            return 1;
+        else
+            return 0;
+    }
+
     public void dropIfType(Lexeme id) {
         Node node = find(id.value);
-        if(node == null)
+        if (node == null)
             return;
-        if(node instanceof NodeType)
+        if (node instanceof NodeType)
             throw new AnalyzeError(sc, id, "It is type");
+    }
+
+    public void increaseLimit(long inc, Lexeme ancestor) {
+        limit += inc;
+        if (limit >= tooBig)
+            throw new AnalyzeError(sc, ancestor, "Can't declare type, size is too big");
+    }
+
+    public long getId(Lexeme id){
+        Node node = find(id.value);
+
+        return ((NodeId)node).value;
+    }
+
+    public long getElement(Lexeme id, int[] indexes){
+        NodeArray node = (NodeArray) find(id.value);
+
+        int len = indexes.length;
+        int greatIndex = 0;
+        for(int i = 0; i < len; i++){
+            greatIndex += node.getBigIndex(indexes[i],i);
+        }
+
+        return node.array[greatIndex];
     }
 
 }

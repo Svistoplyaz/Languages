@@ -10,7 +10,7 @@ public class Node {
     public Lexeme lexeme;
     public DataType type;
 
-    public int[] allsizes;
+//    public int[] allsizes;
 
     public Node(Node p, DataType t, Lexeme l) {
         parent = p;

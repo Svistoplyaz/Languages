@@ -1,4 +1,4 @@
-typedef int e[20];
+typedef int e[200000];
 typedef e f[30];
 
 int main(){
@@ -15,7 +15,7 @@ int main(){
     xx[0][1][2] = 2;
     l30[0][1] = 0;
     //l30[0] = 0;
-    //l30 = 0;
+    l30 = 0;
     typedef int b1[100];
     typedef int e[10];
     typedef e f[10];

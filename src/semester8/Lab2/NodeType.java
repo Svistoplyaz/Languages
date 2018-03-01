@@ -4,7 +4,7 @@ import semester7.Lab3.Lexeme;
 import semester7.Lab5.DataType;
 
 public class NodeType extends Node {
-    private int[] sizes;
+    int[] sizes;
 
     public NodeType(Node p, DataType t, Lexeme l, int size) {
         super(p, t, l);
@@ -15,7 +15,7 @@ public class NodeType extends Node {
     public NodeType(Node p, NodeType t, Lexeme l, int size) {
         super(p, t.type, l);
         sizes = new int[t.sizes.length+1];
-        System.arraycopy(t.allsizes, 0, sizes, 0, t.sizes.length);
+        System.arraycopy(t.sizes, 0, sizes, 0, t.sizes.length);
         sizes[sizes.length-1] = size;
     }
 
@@ -25,5 +25,9 @@ public class NodeType extends Node {
             ans *= size;
 
         return ans;
+    }
+
+    public int dimensions(){
+        return sizes.length;
     }
 }
