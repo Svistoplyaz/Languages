@@ -30,7 +30,3 @@ A4 -> A5 AD4
 AD4 -> * A5 AD4 ^ / A5 AD4 ^ % A5 AD4 ^ #
 A5 -> ! A5 ^ A6
 A6 -> ( A0 ) ^ I BR ^ N
-
-
-
-B -> P B ^ D1 B ^ #
