@@ -1,6 +1,6 @@
-package semester7.operatorPrecedence;
+package operatorPrecedence;
 
-import semester7.llk.Grammar;
+import llk.Grammar;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -71,7 +71,6 @@ public class Generator {
                 }
             }
         }
-        //
 
         formPairs();
         formBeginEndTerms();
@@ -89,14 +88,14 @@ public class Generator {
             for (String rightTermInRule : endTerm.get(nonTerm))
                 for (String rightTermInPair : NonTerm_Term.get(nonTerm)) {
                     table[indexOf(rightTermInRule, keys)][indexOf(rightTermInPair, keys)].add(Comparance.more);
-                    if (rightTermInRule.equals(")") && rightTermInPair.equals("{"))
+                    if (rightTermInRule.equals("int") && rightTermInPair.equals(";"))
                         System.out.println(nonTerm + " more");
                 }
 
             for (String leftTermInPair : Term_NonTerm.get(nonTerm))
                 for (String leftTermInRule : beginTerm.get(nonTerm)) {
                     table[indexOf(leftTermInPair, keys)][indexOf(leftTermInRule, keys)].add(Comparance.less);
-                    if (leftTermInPair.equals(")") && leftTermInRule.equals("{"))
+                    if (leftTermInPair.equals("int") && leftTermInRule.equals(";"))
                         System.out.println(nonTerm + " less");
                 }
 
