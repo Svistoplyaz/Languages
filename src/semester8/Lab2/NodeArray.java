@@ -27,6 +27,16 @@ public class NodeArray extends Node {
         for(int i = 1; i < len; i++){
             ans *= nType.sizes[i];
         }
-        return ans;
+        return ans * cur;
+    }
+
+    int getGreatIndex(int[] indexes){
+        int greatIndex = 0;
+        int len = indexes.length;
+        for(int i = 0; i < len; i++){
+            greatIndex += getBigIndex(indexes[i],i);
+        }
+
+        return greatIndex;
     }
 }

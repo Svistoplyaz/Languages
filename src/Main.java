@@ -11,7 +11,7 @@ import java.io.FileReader;
  */
 public class Main {
     public static void main(String[] args) throws Exception{
-        SyntaxAnalyzer3 sa = new SyntaxAnalyzer3(new FileReader("in.in"));
+        SyntaxAnalyzer3 sa = new SyntaxAnalyzer3(new FileReader("in1.in"));
 //        LLkAnalyzer sa = new LLkAnalyzer(new File("table.semester7.llk"),new Scanner(new FileReader("in.in")));
 
         long[][][] i = new long[1000][1000][100];

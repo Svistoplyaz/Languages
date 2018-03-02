@@ -314,6 +314,8 @@ public class Interpreter {
     }
 
     public long calculateA0(long first, long second) {
+        System.out.println("A0 first - " + first + "; second - " + second);
+
         boolean f, s;
         f = first != 0;
         s = second != 0;
@@ -325,6 +327,8 @@ public class Interpreter {
     }
 
     public long calculateA1(long first, long second) {
+        System.out.println("A1 first - " + first + "; second - " + second);
+
         boolean f, s;
         f = first != 0;
         s = second != 0;
@@ -336,6 +340,8 @@ public class Interpreter {
     }
 
     public long calculateA2(long first, long second, Type type) {
+        System.out.println("A2 first - " + first + "; second - " + second);
+
         boolean ans = false;
         switch (type) {
             case T_less:
@@ -371,6 +377,8 @@ public class Interpreter {
     }
 
     public long calculateA3(long first, long second, Type type) {
+        System.out.println("A3 first - " + first + "; second - " + second);
+
         switch (type) {
             case T_plus:
                 return first + second;
@@ -388,6 +396,8 @@ public class Interpreter {
     }
 
     public long calculateA4(long first, long second, Type type) {
+        System.out.println("A4 first - " + first + "; second - " + second);
+
         switch (type) {
             case T_multiply:
                 return first * second;
@@ -409,7 +419,7 @@ public class Interpreter {
     public long calculateA5(long first, int inc) {
         boolean f = first != 0;
 
-        if (inc % 2 == 1 && !f)
+        if (inc % 2 == 1 && !f || inc % 2 == 0 && f)
             return 1;
         else
             return 0;
@@ -429,22 +439,53 @@ public class Interpreter {
             throw new AnalyzeError(sc, ancestor, "Can't declare type, size is too big");
     }
 
-    public long getId(Lexeme id){
+    public long getId(Lexeme id) {
         Node node = find(id.value);
 
-        return ((NodeId)node).value;
+        return ((NodeId) node).value;
     }
 
-    public long getElement(Lexeme id, int[] indexes){
+    public long getElement(Lexeme id, int[] indexes) {
         NodeArray node = (NodeArray) find(id.value);
 
-        int len = indexes.length;
-        int greatIndex = 0;
-        for(int i = 0; i < len; i++){
-            greatIndex += node.getBigIndex(indexes[i],i);
-        }
-
-        return node.array[greatIndex];
+        return node.array[node.getGreatIndex(indexes)];
     }
 
+    public void putValueIn(Lexeme lex, DataType key, int index, long value) {
+        if (index == -1) {
+            putValueInId(lex, key, value);
+        } else {
+            putValueInElement(lex, key, index, value);
+        }
+    }
+
+    public void putValueInId(Lexeme id, DataType dataType, long value) {
+        NodeId node = (NodeId) find(id.value);
+
+        if (dataType == DataType.tInt)
+            node.value = (int) value;
+
+        node.value = value;
+        System.out.println(id.value + " = " + node.value);
+    }
+
+    public void putValueInElement(Lexeme id, DataType dataType, int index, long value) {
+        NodeArray node = (NodeArray) find(id.value);
+
+        if (dataType == DataType.tInt)
+            node.array[index] = (int) value;
+
+        node.array[index] = value;
+        System.out.println(id.value + "[] = " + node.array[index]);
+    }
+
+    public long getGreatIndex(Lexeme id, int[] a) {
+        NodeArray node = (NodeArray) find(id.value);
+
+        return node.getGreatIndex(a);
+    }
+
+    public void forCheck(){
+
+    }
 }
