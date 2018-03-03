@@ -485,7 +485,7 @@ public class Interpreter {
         return node.getGreatIndex(a);
     }
 
-    public void forCheck(){
-
+    public boolean forCheck(Pair<DataType, Long> pair){
+        return pair.getValue()!=0;
     }
 }

@@ -218,7 +218,7 @@ public class SyntaxAnalyzer3 {
                 sc.next();
                 break;
             case T_id:
-                tAssignment(false);
+                tAssignment(false, true);
                 break;
             default:
                 throw new AnalyzeError(sc, lexeme, T_id, T_for, T_lbracket, T_semicolon);
@@ -329,7 +329,7 @@ public class SyntaxAnalyzer3 {
         return pair;
     }
 
-    private void tAssignment(boolean inFor) {
+    private void tAssignment(boolean inFor, boolean interp) {
         Pair<Lexeme, Pair<DataType, Long>> leftPair = workWithIdOrArrayAssign();
 
         Lexeme eq = scanAndCheck(T_assign);
@@ -337,28 +337,48 @@ public class SyntaxAnalyzer3 {
         inter.checkAssignment(eq, leftPair.getValue().getKey(), rightPair.getKey());
 
         //Вставить присваивание
-        inter.putValueIn(leftPair.getKey(), leftPair.getValue().getKey(), leftPair.getValue().getValue().intValue(), rightPair.getValue());
+        if(interp)
+            inter.putValueIn(leftPair.getKey(), leftPair.getValue().getKey(), leftPair.getValue().getValue().intValue(), rightPair.getValue());
 
         if (!inFor)
             scanAndCheck(T_semicolon);
     }
 
     private void tFor() {
+        Position check, inc, beg, end;
         scanAndCheck(T_for);
         scanAndCheck(T_lparenthesis);
         tDataDescription();
-        tA0();
+        check = sc.getCurPosition();
+        Pair<DataType, Long> pair = tA0();
         scanAndCheck(T_semicolon);
-        tAssignment(true);
+        inc = sc.getCurPosition();
+        tAssignment(true,false);
         scanAndCheck(T_rparenthesis);
+        beg = sc.getCurPosition();
 
-        Lexeme block = sc.nextWithBackup();
-        switch (block.type) {
-            case T_lbracket:
-                tBlock();
+        while(pair.getValue()!=0) {
+            sc.setCurPosition(beg);
+            Lexeme block = sc.nextWithBackup();
+            switch (block.type) {
+                case T_lbracket:
+                    tBlock();
+                    break;
+                default:
+                    tPartOfBlock();
+            }
+            end = sc.getCurPosition();
+
+            //увеличить
+            sc.setCurPosition(inc);
+            tAssignment(true, true);
+
+            //проверить
+            sc.setCurPosition(check);
+            if(!inter.forCheck(tA0())) {
+                sc.setCurPosition(end);
                 break;
-            default:
-                tPartOfBlock();
+            }
         }
     }
 
