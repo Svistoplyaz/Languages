@@ -19,6 +19,7 @@ public class Main {
 
         try{
             sa.tProgram();
+            int k = 1;
         }catch (AnalyzeError e){
 //            e.printStackTrace();
             System.out.println(e.getDisplayMessage());

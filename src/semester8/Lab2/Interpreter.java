@@ -488,4 +488,12 @@ public class Interpreter {
     public boolean forCheck(Pair<DataType, Long> pair){
         return pair.getValue()!=0;
     }
+
+    public Node getCurrent(){
+        return current;
+    }
+
+    public void setCurrent(Node cur){
+        current = cur;
+    }
 }

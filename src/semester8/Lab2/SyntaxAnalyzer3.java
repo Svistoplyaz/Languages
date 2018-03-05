@@ -225,25 +225,25 @@ public class SyntaxAnalyzer3 {
         }
     }
 
-    private Pair<DataType,Long> workWithIdOrArray() {
+    private Pair<DataType, Long> workWithIdOrArray() {
         Position pos = sc.getCurPosition();
         Lexeme identifier = scanAndCheck(T_id);
         inter.dropIfType(identifier);
         Lexeme skobka = sc.nextWithBackup();
 
-        Pair<DataType,Long> pair;
+        Pair<DataType, Long> pair;
         if (skobka.type == T_lsbracket) {
             sc.setCurPosition(pos);
             pair = tArrayElement();
         } else {
             inter.dropIfArray(identifier);
-            pair = new Pair<>(inter.getVariableType(identifier),inter.getId(identifier));
+            pair = new Pair<>(inter.getVariableType(identifier), inter.getId(identifier));
         }
 
         return new Pair<>(pair.getKey(), pair.getValue());
     }
 
-    private Pair<DataType,Long> tArrayElement() {
+    private Pair<DataType, Long> tArrayElement() {
         Lexeme lex = scanAndCheck(T_id);
         Pair<DataType, Integer> arrInfo = inter.getArrayType(lex);
 
@@ -268,7 +268,7 @@ public class SyntaxAnalyzer3 {
             throw new AnalyzeError(sc, lex, "Can't cast this type");
 
         int[] a = new int[arrInfo.getValue()];
-        for(int i = 0; i < a.length; i++){
+        for (int i = 0; i < a.length; i++) {
             a[i] = arr.get(i);
         }
 
@@ -277,13 +277,13 @@ public class SyntaxAnalyzer3 {
         return pair;
     }
 
-    private Pair<Lexeme, Pair<DataType,Long>> workWithIdOrArrayAssign() {
+    private Pair<Lexeme, Pair<DataType, Long>> workWithIdOrArrayAssign() {
         Position pos = sc.getCurPosition();
         Lexeme identifier = scanAndCheck(T_id);
         inter.dropIfType(identifier);
         Lexeme skobka = sc.nextWithBackup();
 
-        Pair<DataType,Long> pair;
+        Pair<DataType, Long> pair;
         if (skobka.type == T_lsbracket) {
             sc.setCurPosition(pos);
             pair = tArrayElementAssign();
@@ -295,7 +295,7 @@ public class SyntaxAnalyzer3 {
         return new Pair<>(identifier, new Pair<>(pair.getKey(), pair.getValue()));
     }
 
-    private Pair<DataType,Long> tArrayElementAssign() {
+    private Pair<DataType, Long> tArrayElementAssign() {
         Lexeme lex = scanAndCheck(T_id);
         Pair<DataType, Integer> arrInfo = inter.getArrayType(lex);
 
@@ -320,7 +320,7 @@ public class SyntaxAnalyzer3 {
             throw new AnalyzeError(sc, lex, "Can't cast this type");
 
         int[] a = new int[arrInfo.getValue()];
-        for(int i = 0; i < a.length; i++){
+        for (int i = 0; i < a.length; i++) {
             a[i] = arr.get(i);
         }
 
@@ -337,7 +337,7 @@ public class SyntaxAnalyzer3 {
         inter.checkAssignment(eq, leftPair.getValue().getKey(), rightPair.getKey());
 
         //Вставить присваивание
-        if(interp)
+        if (interp)
             inter.putValueIn(leftPair.getKey(), leftPair.getValue().getKey(), leftPair.getValue().getValue().intValue(), rightPair.getValue());
 
         if (!inFor)
@@ -353,15 +353,20 @@ public class SyntaxAnalyzer3 {
         Pair<DataType, Long> pair = tA0();
         scanAndCheck(T_semicolon);
         inc = sc.getCurPosition();
-        tAssignment(true,false);
+        tAssignment(true, false);
         scanAndCheck(T_rparenthesis);
         beg = sc.getCurPosition();
 
-        while(pair.getValue()!=0) {
+        Node cur = inter.getCurrent();
+        while (pair.getValue() != 0) {
             sc.setCurPosition(beg);
             Lexeme block = sc.nextWithBackup();
+
             switch (block.type) {
                 case T_lbracket:
+                    inter.setCurrent(cur);
+                    cur.left = null;
+
                     tBlock();
                     break;
                 default:
@@ -375,15 +380,15 @@ public class SyntaxAnalyzer3 {
 
             //проверить
             sc.setCurPosition(check);
-            if(!inter.forCheck(tA0())) {
+            if (!inter.forCheck(tA0())) {
                 sc.setCurPosition(end);
                 break;
             }
         }
     }
 
-    private Pair<DataType,Long> tA0() {
-        Pair<DataType,Long> pair = A1();
+    private Pair<DataType, Long> tA0() {
+        Pair<DataType, Long> pair = A1();
         DataType type = pair.getKey();
         long ans = pair.getValue();
 
@@ -403,8 +408,8 @@ public class SyntaxAnalyzer3 {
         return new Pair<>(type, ans);
     }
 
-    private Pair<DataType,Long> A1() {
-        Pair<DataType,Long> pair = A2();
+    private Pair<DataType, Long> A1() {
+        Pair<DataType, Long> pair = A2();
         DataType type = pair.getKey();
         long ans = pair.getValue();
 
@@ -423,8 +428,8 @@ public class SyntaxAnalyzer3 {
         return new Pair<>(type, ans);
     }
 
-    private Pair<DataType,Long> A2() {
-        Pair<DataType,Long> pair = A3();
+    private Pair<DataType, Long> A2() {
+        Pair<DataType, Long> pair = A3();
         DataType type = pair.getKey();
         long ans = pair.getValue();
 
@@ -432,7 +437,7 @@ public class SyntaxAnalyzer3 {
         Lexeme comp = sc.next();
         while (comp.type == T_less || comp.type == T_leq || comp.type == T_more || comp.type == T_meq || comp.type == T_eqaul || comp.type == T_neq) {
             pair = A3();
-            ans = inter.calculateA2(ans, pair.getValue(),comp.type);
+            ans = inter.calculateA2(ans, pair.getValue(), comp.type);
 
             type = DataType.tInt;
             pos = sc.getCurPosition();
@@ -443,8 +448,8 @@ public class SyntaxAnalyzer3 {
         return new Pair<>(type, ans);
     }
 
-    private Pair<DataType,Long> A3() {
-        Pair<DataType,Long> pair = A4();
+    private Pair<DataType, Long> A3() {
+        Pair<DataType, Long> pair = A4();
         DataType type = pair.getKey();
         long ans = pair.getValue();
 
@@ -453,9 +458,9 @@ public class SyntaxAnalyzer3 {
         while (plus.type == T_plus || plus.type == T_minus) {
             pair = A4();
             type = inter.cast(type, pair.getKey());
-            ans = inter.calculateA3(ans, pair.getValue(),plus.type);
-            if(type == DataType.tInt)
-                ans = (int)ans;
+            ans = inter.calculateA3(ans, pair.getValue(), plus.type);
+            if (type == DataType.tInt)
+                ans = (int) ans;
 
             pos = sc.getCurPosition();
             plus = sc.next();
@@ -465,8 +470,8 @@ public class SyntaxAnalyzer3 {
         return new Pair<>(type, ans);
     }
 
-    private Pair<DataType,Long> A4() {
-        Pair<DataType,Long> pair = A5();
+    private Pair<DataType, Long> A4() {
+        Pair<DataType, Long> pair = A5();
         DataType type = pair.getKey();
         long ans = pair.getValue();
 
@@ -475,9 +480,9 @@ public class SyntaxAnalyzer3 {
         while (mult.type == T_multiply || mult.type == T_division || mult.type == T_mod) {
             pair = A5();
             type = inter.cast(type, pair.getKey());
-            ans = inter.calculateA4(ans, pair.getValue(),mult.type);
-            if(type == DataType.tInt)
-                ans = (int)ans;
+            ans = inter.calculateA4(ans, pair.getValue(), mult.type);
+            if (type == DataType.tInt)
+                ans = (int) ans;
 
             pos = sc.getCurPosition();
             mult = sc.next();
@@ -487,7 +492,7 @@ public class SyntaxAnalyzer3 {
         return new Pair<>(type, ans);
     }
 
-    private Pair<DataType,Long> A5() {
+    private Pair<DataType, Long> A5() {
         Position pos = sc.getCurPosition();
         Lexeme mult = sc.next();
         int inc = 0;
@@ -499,16 +504,16 @@ public class SyntaxAnalyzer3 {
         }
         sc.setCurPosition(pos);
 
-        Pair<DataType,Long> pair = A6();
+        Pair<DataType, Long> pair = A6();
         long ans;
-        if(inc != 0)
-            ans = inter.calculateA5(pair.getValue(),inc);
+        if (inc != 0)
+            ans = inter.calculateA5(pair.getValue(), inc);
         else
             ans = pair.getValue();
         return new Pair<>(DataType.tInt, ans);
     }
 
-    private Pair<DataType,Long> A6() {
+    private Pair<DataType, Long> A6() {
         Position pos = sc.getCurPosition();
         Lexeme next = sc.next();
         DataType cur;
@@ -516,12 +521,12 @@ public class SyntaxAnalyzer3 {
             case T_const10:
             case T_const16:
                 cur = inter.getConstType(next);
-                if(cur == DataType.tInt)
-                    return new Pair<>(cur,(long)(int)(inter.getConstNumber(next)));
+                if (cur == DataType.tInt)
+                    return new Pair<>(cur, (long) (int) (inter.getConstNumber(next)));
                 else
-                    return new Pair<>(cur,inter.getConstNumber(next));
+                    return new Pair<>(cur, inter.getConstNumber(next));
             case T_lparenthesis:
-                Pair<DataType,Long> pair = tA0();
+                Pair<DataType, Long> pair = tA0();
                 scanAndCheck(T_rparenthesis);
                 return pair;
             case T_id:
