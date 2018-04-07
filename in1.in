@@ -1,6 +1,20 @@
-int main(){
-    int i = 0;
-    for(int j = 0; i < 3; j = j + 0x10)
-        i = i + 2;
+typedef int e[10];
+typedef e f[20];
 
+int main(){
+    f a;
+
+    int s = 0;
+    for(int i = 0; i < 10; i = i + 1){
+        for(int j = 0; j < 5; j = j + 1){
+            a[i][j] = i*3+j;
+            s = s + a[i][j];
+        }
+    }
+
+    int sum = 0;
+    for(int j1 = 4; j1 >= 0; j1 = j1 - 1){
+        for(int i1 = 0; i1 < 10; i1 = i1 + 1)
+            sum = sum + a[i1][j1];
+    }
 }

@@ -16,6 +16,7 @@ public class Interpreter {
     private final Scanner sc;
     private final int tooBig = 10000001;
     private long limit = 0;
+    boolean interpret = true;
 
     private final Node root = new Node(null, null, null);
     private Node current = root;
@@ -275,7 +276,13 @@ public class Interpreter {
     }
 
     public void checkAssignment(Lexeme lexeme, DataType variable, DataType expression) {
-        if (cast(variable, expression) != variable) {
+        DataType cast = cast(variable, expression);
+        if(cast == variable || (cast == DataType.tInt && variable == DataType.tInt64
+                || cast == DataType.tInt64 && variable == DataType.tInt)){
+
+        }else{
+//        if (cast != variable && !(cast == DataType.tInt && variable == DataType.tInt64 || cast == DataType.tInt64)) {
+
             String line1 = "Incompatibility of types during operation";
             String line2 = "'" + variable + "' = '" + expression + "'";
             throw new AnalyzeError(sc, lexeme, line1, line2);
@@ -314,7 +321,9 @@ public class Interpreter {
     }
 
     public long calculateA0(long first, long second) {
-        System.out.println("A0 first - " + first + "; second - " + second);
+        if(!interpret)
+            return 0;
+        System.out.println("A0 first = " + first + "; || second = " + second);
 
         boolean f, s;
         f = first != 0;
@@ -327,7 +336,9 @@ public class Interpreter {
     }
 
     public long calculateA1(long first, long second) {
-        System.out.println("A1 first - " + first + "; second - " + second);
+        if(!interpret)
+            return 0;
+        System.out.println("A1 first = " + first + "; && second = " + second);
 
         boolean f, s;
         f = first != 0;
@@ -340,26 +351,33 @@ public class Interpreter {
     }
 
     public long calculateA2(long first, long second, Type type) {
-        System.out.println("A2 first - " + first + "; second - " + second);
+        if(!interpret)
+            return 0;
 
         boolean ans = false;
         switch (type) {
             case T_less:
+                System.out.println("A2 first = " + first + "; < second = " + second);
                 ans = first < second;
                 break;
             case T_leq:
+                System.out.println("A2 first = " + first + "; <= second = " + second);
                 ans = first <= second;
                 break;
             case T_more:
+                System.out.println("A2 first = " + first + "; > second = " + second);
                 ans = first > second;
                 break;
             case T_meq:
+                System.out.println("A2 first = " + first + "; >= second = " + second);
                 ans = first >= second;
                 break;
             case T_eqaul:
+                System.out.println("A2 first = " + first + "; == second = " + second);
                 ans = first >= second;
                 break;
             case T_neq:
+                System.out.println("A2 first = " + first + "; != second = " + second);
                 ans = first >= second;
                 break;
             default:
@@ -377,12 +395,15 @@ public class Interpreter {
     }
 
     public long calculateA3(long first, long second, Type type) {
-        System.out.println("A3 first - " + first + "; second - " + second);
+        if(!interpret)
+            return 0;
 
         switch (type) {
             case T_plus:
+                System.out.println("A3 first = " + first + "; + second = " + second);
                 return first + second;
             case T_minus:
+                System.out.println("A3 first = " + first + "; - second = " + second);
                 return first - second;
             default:
                 try {
@@ -396,18 +417,21 @@ public class Interpreter {
     }
 
     public long calculateA4(long first, long second, Type type) {
-        System.out.println("A4 first - " + first + "; second - " + second);
+        if(!interpret)
+            return 0;
 
         switch (type) {
             case T_multiply:
+                System.out.println("A4 first = " + first + "; * second = " + second);
                 return first * second;
             case T_division:
+                System.out.println("A4 first = " + first + "; / second = " + second);
                 return first / second;
             case T_mod:
                 return first % second;
             default:
                 try {
-                    throw new Exception("SHITSTORM A3 !!!");
+                    throw new Exception("SHITSTORM A4 !!!");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -417,6 +441,9 @@ public class Interpreter {
     }
 
     public long calculateA5(long first, int inc) {
+        if(!interpret)
+            return 0;
+        System.out.println("A5 first = " + first + ";");
         boolean f = first != 0;
 
         if (inc % 2 == 1 && !f || inc % 2 == 0 && f)
@@ -426,6 +453,8 @@ public class Interpreter {
     }
 
     public void dropIfType(Lexeme id) {
+//        if(!interpret)
+//            return;
         Node node = find(id.value);
         if (node == null)
             return;
@@ -452,6 +481,8 @@ public class Interpreter {
     }
 
     public void putValueIn(Lexeme lex, DataType key, int index, long value) {
+        if(!interpret)
+            return;
         if (index == -1) {
             putValueInId(lex, key, value);
         } else {
@@ -460,6 +491,8 @@ public class Interpreter {
     }
 
     public void putValueInId(Lexeme id, DataType dataType, long value) {
+        if(!interpret)
+            return;
         NodeId node = (NodeId) find(id.value);
 
         if (dataType == DataType.tInt)
@@ -470,6 +503,8 @@ public class Interpreter {
     }
 
     public void putValueInElement(Lexeme id, DataType dataType, int index, long value) {
+        if(!interpret)
+            return;
         NodeArray node = (NodeArray) find(id.value);
 
         if (dataType == DataType.tInt)

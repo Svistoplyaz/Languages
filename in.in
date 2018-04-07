@@ -1,4 +1,4 @@
-typedef int e[200000];
+typedef int e[20];
 typedef e f[30];
 
 int main(){

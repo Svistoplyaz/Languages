@@ -218,7 +218,7 @@ public class SyntaxAnalyzer3 {
                 sc.next();
                 break;
             case T_id:
-                tAssignment(false, true);
+                tAssignment(false);
                 break;
             default:
                 throw new AnalyzeError(sc, lexeme, T_id, T_for, T_lbracket, T_semicolon);
@@ -329,7 +329,7 @@ public class SyntaxAnalyzer3 {
         return pair;
     }
 
-    private void tAssignment(boolean inFor, boolean interp) {
+    private void tAssignment(boolean inFor) {
         Pair<Lexeme, Pair<DataType, Long>> leftPair = workWithIdOrArrayAssign();
 
         Lexeme eq = scanAndCheck(T_assign);
@@ -337,7 +337,7 @@ public class SyntaxAnalyzer3 {
         inter.checkAssignment(eq, leftPair.getValue().getKey(), rightPair.getKey());
 
         //Вставить присваивание
-        if (interp)
+        if (inter.interpret)
             inter.putValueIn(leftPair.getKey(), leftPair.getValue().getKey(), leftPair.getValue().getValue().intValue(), rightPair.getValue());
 
         if (!inFor)
@@ -345,6 +345,8 @@ public class SyntaxAnalyzer3 {
     }
 
     private void tFor() {
+        boolean local = inter.interpret;
+
         Position check, inc, beg, end;
         scanAndCheck(T_for);
         scanAndCheck(T_lparenthesis);
@@ -353,12 +355,22 @@ public class SyntaxAnalyzer3 {
         Pair<DataType, Long> pair = tA0();
         scanAndCheck(T_semicolon);
         inc = sc.getCurPosition();
-        tAssignment(true, false);
+        inter.interpret = false;
+        tAssignment(true);
+//        inter.interpret = local;
+
+        if(pair.getValue() != 0)
+            inter.interpret = local;
+        else
+            inter.interpret = false;
+
         scanAndCheck(T_rparenthesis);
         beg = sc.getCurPosition();
 
         Node cur = inter.getCurrent();
-        while (pair.getValue() != 0) {
+
+        do {
+
             sc.setCurPosition(beg);
             Lexeme block = sc.nextWithBackup();
 
@@ -366,7 +378,6 @@ public class SyntaxAnalyzer3 {
                 case T_lbracket:
                     inter.setCurrent(cur);
                     cur.left = null;
-
                     tBlock();
                     break;
                 default:
@@ -374,17 +385,21 @@ public class SyntaxAnalyzer3 {
             }
             end = sc.getCurPosition();
 
-            //увеличить
-            sc.setCurPosition(inc);
-            tAssignment(true, true);
+            if(inter.interpret) {
+                //увеличить
+                sc.setCurPosition(inc);
+                tAssignment(true);
 
-            //проверить
-            sc.setCurPosition(check);
-            if (!inter.forCheck(tA0())) {
-                sc.setCurPosition(end);
+                //проверить
+                sc.setCurPosition(check);
+                if (!inter.forCheck(tA0())) {
+                    sc.setCurPosition(end);
+                    break;
+                }
+            }else
                 break;
-            }
-        }
+        }while(true);
+        inter.interpret = local;
     }
 
     private Pair<DataType, Long> tA0() {
@@ -395,7 +410,6 @@ public class SyntaxAnalyzer3 {
         Position pos = sc.getCurPosition();
         Lexeme or = sc.next();
         while (or.type == T_or) {
-            //Разве здесь не А0?
             pair = A1();
             ans = inter.calculateA0(ans, pair.getValue());
 
@@ -506,11 +520,14 @@ public class SyntaxAnalyzer3 {
 
         Pair<DataType, Long> pair = A6();
         long ans;
-        if (inc != 0)
+        if (inc != 0) {
             ans = inter.calculateA5(pair.getValue(), inc);
-        else
+            return new Pair<>(DataType.tInt, ans);
+        }
+        else {
             ans = pair.getValue();
-        return new Pair<>(DataType.tInt, ans);
+            return new Pair<>(pair.getKey(), ans);
+        }
     }
 
     private Pair<DataType, Long> A6() {
